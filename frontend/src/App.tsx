@@ -1,0 +1,122 @@
+import { Suspense, lazy, useEffect } from "react";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { HelmetProvider } from "react-helmet-async";
+import { Navbar } from "@/components/layout/Navbar";
+import { Footer } from "@/components/layout/Footer";
+import { useThemeStore } from "@/store/themeStore";
+import { useAuthStore } from "@/store/authStore";
+
+// Lazy-loaded pages
+const HomePage = lazy(() => import("@/pages/HomePage"));
+const AboutPage = lazy(() => import("@/pages/AboutPage"));
+const ServicesPage = lazy(() => import("@/pages/ServicesPage"));
+const ProjectsPage = lazy(() => import("@/pages/ProjectsPage"));
+const BlogPage = lazy(() => import("@/pages/BlogPage"));
+const CareersPage = lazy(() => import("@/pages/CareersPage"));
+const ContactPage = lazy(() => import("@/pages/ContactPage"));
+const LoginPage = lazy(() => import("@/pages/LoginPage"));
+const DashboardLayout = lazy(() => import("@/pages/dashboard/DashboardLayout"));
+const DashboardOverview = lazy(() => import("@/pages/dashboard/DashboardOverview"));
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 60 * 1000,
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
+
+function PageLoader() {
+  return (
+    <div className="flex items-center justify-center min-h-[60vh]">
+      <div className="w-8 h-8 rounded-full border-2 border-brand-500 border-t-transparent animate-spin" />
+    </div>
+  );
+}
+
+function PublicLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <>
+      <Navbar />
+      {children}
+      <Footer />
+    </>
+  );
+}
+
+function AppContent() {
+  const { theme } = useThemeStore();
+  const { fetchMe } = useAuthStore();
+
+  useEffect(() => {
+    // Apply theme on mount
+    const root = document.documentElement;
+    root.classList.remove("light", "dark");
+    if (theme === "system") {
+      root.classList.add(
+        window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"
+      );
+    } else {
+      root.classList.add(theme);
+    }
+  }, [theme]);
+
+  useEffect(() => {
+    fetchMe();
+  }, []);
+
+  return (
+    <Suspense fallback={<PageLoader />}>
+      <Routes>
+        {/* Public routes */}
+        <Route path="/" element={<PublicLayout><HomePage /></PublicLayout>} />
+        <Route path="/about" element={<PublicLayout><AboutPage /></PublicLayout>} />
+        <Route path="/services" element={<PublicLayout><ServicesPage /></PublicLayout>} />
+        <Route path="/projects" element={<PublicLayout><ProjectsPage /></PublicLayout>} />
+        <Route path="/blog" element={<PublicLayout><BlogPage /></PublicLayout>} />
+        <Route path="/careers" element={<PublicLayout><CareersPage /></PublicLayout>} />
+        <Route path="/contact" element={<PublicLayout><ContactPage /></PublicLayout>} />
+        <Route path="/login" element={<LoginPage />} />
+
+        {/* Dashboard routes */}
+        <Route path="/dashboard" element={<DashboardLayout />}>
+          <Route index element={<DashboardOverview />} />
+          <Route path="projects" element={<Suspense fallback={<PageLoader />}><div className="p-4 text-muted-foreground">Projects manager — full CRUD</div></Suspense>} />
+          <Route path="blog" element={<Suspense fallback={<PageLoader />}><div className="p-4 text-muted-foreground">Blog manager — full CRUD</div></Suspense>} />
+          <Route path="jobs" element={<Suspense fallback={<PageLoader />}><div className="p-4 text-muted-foreground">Jobs manager — full CRUD</div></Suspense>} />
+          <Route path="users" element={<Suspense fallback={<PageLoader />}><div className="p-4 text-muted-foreground">Users manager</div></Suspense>} />
+        </Route>
+
+        {/* 404 */}
+        <Route path="*" element={
+          <PublicLayout>
+            <div className="flex flex-col items-center justify-center min-h-[70vh] text-center">
+              <h1 className="text-8xl font-bold gradient-text mb-4">404</h1>
+              <p className="text-muted-foreground mb-6">This page doesn't exist.</p>
+              <a href="/" className="px-6 py-3 rounded-xl bg-brand-500 text-white font-medium hover:bg-brand-600 transition-colors">
+                Go Home
+              </a>
+            </div>
+          </PublicLayout>
+        } />
+      </Routes>
+    </Suspense>
+  );
+}
+
+export default function App() {
+  return (
+    <HelmetProvider>
+      <QueryClientProvider client={queryClient}>
+        <BrowserRouter>
+          <AppContent />
+        </BrowserRouter>
+        <ReactQueryDevtools initialIsOpen={false} />
+      </QueryClientProvider>
+    </HelmetProvider>
+  );
+}
