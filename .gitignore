@@ -1,8 +1,11 @@
-# Environment files
+# Environment files — never commit real credentials
 .env
 .env.dev
 .env.prod
+.env.development
+.env.production
 *.env
+# .env.example IS committed (safe placeholders only)
 
 # Python
 __pycache__/

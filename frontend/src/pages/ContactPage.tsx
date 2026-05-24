@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Helmet } from "react-helmet-async";
+import { SEOHead } from "@/components/seo/SEOHead";
 import { motion } from "framer-motion";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -58,10 +58,13 @@ export default function ContactPage() {
 
   return (
     <>
-      <Helmet>
-        <title>Contact Us — BlackMarlinBD</title>
-        <meta name="description" content="Get in touch with BlackMarlinBD to discuss your project." />
-      </Helmet>
+      <SEOHead
+        pageKey="contact"
+        fallback={{
+          title: "Contact Us — BlackMarlinBD",
+          description: "Get in touch with BlackMarlinBD to discuss your project.",
+        }}
+      />
 
       <main className="pt-28 pb-24">
         <div className="container mx-auto px-4">

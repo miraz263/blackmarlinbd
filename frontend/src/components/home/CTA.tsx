@@ -1,9 +1,24 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { ArrowRight, Calendar } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
+import { homepageQueryOptions } from "@/services/homepageService";
 
 export function CTA() {
+  const { data } = useQuery(homepageQueryOptions);
+
+  const section = data?.sections?.cta;
+
+  if (section && !section.is_visible) return null;
+
+  const title = section?.title ?? "Ready to Build Something Extraordinary?";
+  const description =
+    section?.description ??
+    "Join 50+ global enterprises that trust BlackMarlinBD to engineer their most critical technology infrastructure.";
+  const ctaText = section?.cta_text ?? "Start Your Project";
+  const ctaLink = section?.cta_link ?? "/contact";
+
   return (
     <section className="py-24 relative overflow-hidden">
       <div className="absolute inset-0 -z-10">
@@ -15,7 +30,6 @@ export function CTA() {
             backgroundSize: "32px 32px",
           }}
         />
-        {/* Animated blobs */}
         <motion.div
           animate={{ scale: [1, 1.3, 1], x: [0, 30, 0] }}
           transition={{ duration: 10, repeat: Infinity }}
@@ -36,21 +50,18 @@ export function CTA() {
           transition={{ duration: 0.6 }}
         >
           <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
-            Ready to Build Something
-            <br />
-            <span className="text-white/80">Extraordinary?</span>
+            {title}
           </h2>
           <p className="text-lg sm:text-xl text-white/70 max-w-2xl mx-auto mb-10">
-            Join 50+ global enterprises that trust BlackMarlinBD to engineer their most
-            critical technology infrastructure.
+            {description}
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link to="/contact">
+            <Link to={ctaLink}>
               <Button
                 size="xl"
                 className="bg-white text-brand-600 hover:bg-white/90 shadow-2xl shadow-black/20 group"
               >
-                Start Your Project
+                {ctaText}
                 <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
               </Button>
             </Link>

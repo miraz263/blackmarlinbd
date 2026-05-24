@@ -3,6 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, Moon, Sun, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { LanguageSwitcher } from "@/components/ui/LanguageSwitcher";
 import { useThemeStore } from "@/store/themeStore";
 import { useAuthStore } from "@/store/authStore";
 import { cn } from "@/lib/utils";
@@ -132,6 +133,7 @@ export function Navbar() {
 
           {/* Right Actions */}
           <div className="flex items-center gap-2">
+            <LanguageSwitcher variant="flags" className="hidden lg:flex" />
             <button
               onClick={toggleTheme}
               className="w-9 h-9 flex items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent transition-colors duration-200"
@@ -196,6 +198,7 @@ export function Navbar() {
                 </Link>
               ))}
               <div className="mt-4 flex flex-col gap-2">
+                <LanguageSwitcher variant="pills" />
                 <Link to="/login">
                   <Button variant="outline" className="w-full">Sign In</Button>
                 </Link>

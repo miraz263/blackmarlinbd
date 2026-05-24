@@ -1,13 +1,17 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { ArrowRight, Play, Sparkles, TrendingUp, Shield, Zap } from "lucide-react";
+import {
+  ArrowRight, Play, Sparkles, Zap, Star, Users, TrendingUp, Award, Globe,
+  type LucideIcon,
+} from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
+import { homepageQueryOptions } from "@/services/homepageService";
+import type { HeroButton, StatisticCard } from "@/types";
 
-const stats = [
-  { label: "Projects Delivered", value: "200+", icon: TrendingUp },
-  { label: "Enterprise Clients", value: "50+", icon: Shield },
-  { label: "Uptime SLA", value: "99.9%", icon: Zap },
-];
+const ICON_MAP: Record<string, LucideIcon> = {
+  Zap, Star, Users, TrendingUp, Award, Globe,
+};
 
 const floatingBadges = [
   { text: "AI-Powered", color: "from-purple-500 to-brand-500", x: "-5%", y: "20%" },
@@ -26,13 +30,46 @@ const item = {
   visible: { y: 0, opacity: 1, transition: { duration: 0.6, ease: "easeOut" } },
 };
 
+const FALLBACK_STATS: StatisticCard[] = [
+  { id: 0, label: "Uptime SLA", value: "99.9%", icon_name: "Zap", order: 0, is_published: true },
+];
+
+function HeroButtonLink({ btn }: { btn: HeroButton }) {
+  const isExternal = btn.url.startsWith("http");
+  const inner =
+    btn.variant === "primary" ? (
+      <Button variant="gradient" size="xl" className="group">
+        {btn.label}
+        <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+      </Button>
+    ) : (
+      <Button variant="outline" size="xl">
+        {btn.label}
+      </Button>
+    );
+
+  if (isExternal) {
+    return (
+      <a href={btn.url} target="_blank" rel="noopener noreferrer">
+        {inner}
+      </a>
+    );
+  }
+  return <Link to={btn.url}>{inner}</Link>;
+}
+
 export function Hero() {
+  const { data } = useQuery(homepageQueryOptions);
+
+  const hero = data?.hero;
+  const stats = data?.statistics?.length ? data.statistics : FALLBACK_STATS;
+  const buttons = hero?.buttons?.filter((b) => b.is_published) ?? [];
+
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
       {/* Animated background */}
       <div className="absolute inset-0 -z-10">
         <div className="absolute inset-0 bg-gradient-to-br from-brand-950/50 via-background to-background dark:from-brand-950 dark:via-background" />
-        {/* Grid */}
         <div
           className="absolute inset-0 opacity-[0.03] dark:opacity-[0.07]"
           style={{
@@ -40,7 +77,6 @@ export function Hero() {
             backgroundSize: "80px 80px",
           }}
         />
-        {/* Blobs */}
         <motion.div
           animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.5, 0.3] }}
           transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
@@ -58,11 +94,7 @@ export function Hero() {
         <motion.div
           key={badge.text}
           initial={{ opacity: 0, scale: 0.5 }}
-          animate={{
-            opacity: 1,
-            scale: 1,
-            y: [0, -10, 0],
-          }}
+          animate={{ opacity: 1, scale: 1, y: [0, -10, 0] }}
           transition={{
             opacity: { delay: 1 + i * 0.2 },
             scale: { delay: 1 + i * 0.2 },
@@ -80,20 +112,23 @@ export function Hero() {
       <div className="container mx-auto px-4 text-center">
         <motion.div variants={container} initial="hidden" animate="visible" className="max-w-4xl mx-auto">
           {/* Badge */}
-          <motion.div variants={item} className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-brand-500/30 bg-brand-500/10 text-brand-400 text-sm font-medium mb-8">
+          <motion.div
+            variants={item}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-brand-500/30 bg-brand-500/10 text-brand-400 text-sm font-medium mb-8"
+          >
             <Sparkles className="h-4 w-4" />
-            Trusted by Fortune 500 Companies
+            {hero?.badge_text ?? "Trusted by Fortune 500 Companies"}
             <ArrowRight className="h-3 w-3" />
           </motion.div>
 
           {/* Headline */}
           <motion.h1
             variants={item}
-            className="text-5xl sm:text-6xl lg:text-7xl font-bold leading-tight tracking-tight text-foreground mb-6"
+            className="text-5xl sm:text-6xl lg:text-7xl font-bold leading-tight tracking-tight mb-6"
           >
-            We Build
-            <span className="block gradient-text">Intelligent Systems</span>
-            That Scale
+            <span className="gradient-text">
+              {hero?.title ?? "We Build Intelligent Systems That Scale"}
+            </span>
           </motion.h1>
 
           {/* Subtext */}
@@ -101,40 +136,51 @@ export function Hero() {
             variants={item}
             className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto mb-10 leading-relaxed"
           >
-            BlackMarlinBD is a global IT firm specializing in AI, financial technology, cloud
-            infrastructure, and enterprise software — engineering tomorrow's solutions today.
+            {hero?.description ??
+              "BlackMarlinBD is a global IT firm specializing in AI, financial technology, cloud infrastructure, and enterprise software — engineering tomorrow's solutions today."}
           </motion.p>
 
           {/* CTAs */}
-          <motion.div variants={item} className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
-            <Link to="/contact">
-              <Button variant="gradient" size="xl" className="group">
-                Start Your Project
-                <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
-              </Button>
-            </Link>
-            <Link to="/projects">
-              <Button variant="outline" size="xl" className="group gap-2">
-                <Play className="h-4 w-4 fill-current" />
-                View Our Work
-              </Button>
-            </Link>
+          <motion.div
+            variants={item}
+            className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16"
+          >
+            {buttons.length > 0 ? (
+              buttons.map((btn) => <HeroButtonLink key={btn.id} btn={btn} />)
+            ) : (
+              <>
+                <Link to="/contact">
+                  <Button variant="gradient" size="xl" className="group">
+                    Start Your Project
+                    <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                  </Button>
+                </Link>
+                <Link to="/projects">
+                  <Button variant="outline" size="xl" className="group gap-2">
+                    <Play className="h-4 w-4 fill-current" />
+                    View Our Work
+                  </Button>
+                </Link>
+              </>
+            )}
           </motion.div>
 
           {/* Stats */}
-          <motion.div
-            variants={item}
-            className="grid grid-cols-3 gap-8 max-w-lg mx-auto"
-          >
-            {stats.map(({ label, value, icon: Icon }) => (
-              <div key={label} className="text-center">
-                <div className="flex items-center justify-center mb-2">
-                  <Icon className="h-5 w-5 text-brand-400 mr-1.5" />
-                  <span className="text-2xl sm:text-3xl font-bold gradient-text">{value}</span>
+          <motion.div variants={item} className="flex flex-wrap justify-center gap-8">
+            {stats.map((stat) => {
+              const Icon = ICON_MAP[stat.icon_name] ?? Zap;
+              return (
+                <div key={stat.id} className="text-center">
+                  <div className="flex items-center justify-center mb-2">
+                    <Icon className="h-5 w-5 text-brand-400 mr-1.5" />
+                    <span className="text-2xl sm:text-3xl font-bold gradient-text">
+                      {stat.value}
+                    </span>
+                  </div>
+                  <p className="text-xs sm:text-sm text-muted-foreground">{stat.label}</p>
                 </div>
-                <p className="text-xs sm:text-sm text-muted-foreground">{label}</p>
-              </div>
-            ))}
+              );
+            })}
           </motion.div>
         </motion.div>
 

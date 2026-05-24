@@ -9,6 +9,23 @@ export const apiClient = axios.create({
   timeout: 15000,
 });
 
+// Attach current language to every content-fetching request
+apiClient.interceptors.request.use((config) => {
+  try {
+    const stored = localStorage.getItem("bmbd-language");
+    if (stored) {
+      const { state } = JSON.parse(stored) as { state: { language: string } };
+      const lang = state?.language;
+      if (lang && lang !== "en") {
+        config.params = { lang, ...config.params };
+      }
+    }
+  } catch {
+    // never block a request
+  }
+  return config;
+});
+
 let isRefreshing = false;
 let failedQueue: Array<{
   resolve: (value: unknown) => void;
@@ -44,8 +61,10 @@ apiClient.interceptors.response.use(
         return apiClient(originalRequest);
       } catch (refreshError) {
         processQueue(refreshError as AxiosError);
-        // Redirect to login if refresh fails
-        window.location.href = "/login";
+        const isAuthCheck = originalRequest.url?.includes("/auth/me");
+        if (!isAuthCheck && window.location.pathname !== "/login") {
+          window.location.href = "/login";
+        }
         return Promise.reject(refreshError);
       } finally {
         isRefreshing = false;

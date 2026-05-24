@@ -1,188 +1,331 @@
-import { Helmet } from "react-helmet-async";
-import { motion } from "framer-motion";
-import { Brain, BarChart3, Cloud, Globe, ShieldCheck, Check, ArrowRight } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { SEOHead } from "@/components/seo/SEOHead";
+import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
-import { Button } from "@/components/ui/button";
+import { useQuery } from "@tanstack/react-query";
+import {
+  Search, ArrowRight, X,
+  Brain, BarChart3, Cloud, Globe, ShieldCheck, Zap, Server, Code, Database, Lock,
+  type LucideIcon,
+} from "lucide-react";
+import { servicesService, servicesKeys } from "@/services/serviceService";
+import type { ServiceListItem, ServiceParams } from "@/types";
 
-const services = [
-  {
-    id: "ai-ml",
-    icon: Brain,
-    title: "AI & Machine Learning",
-    tagline: "Intelligent Systems at Scale",
-    color: "from-purple-500 to-brand-500",
-    description:
-      "We design and deploy production-grade AI systems — from custom LLM pipelines and RAG architectures to computer vision and predictive analytics. Our ML engineers have shipped models serving billions of inferences.",
-    capabilities: [
-      "Custom LLM fine-tuning & RAG systems",
-      "Real-time inference infrastructure",
-      "MLOps & model monitoring pipelines",
-      "Computer vision & NLP solutions",
-      "Recommendation & personalization engines",
-      "AI-powered process automation",
-    ],
-    tech: ["Python", "PyTorch", "TensorFlow", "LangChain", "Kubernetes", "Ray"],
-  },
-  {
-    id: "financial",
-    icon: BarChart3,
-    title: "Financial Systems",
-    tagline: "Sub-millisecond. Zero-error.",
-    color: "from-green-500 to-emerald-500",
-    description:
-      "We build the financial infrastructure that moves markets. Order management systems, high-frequency trading engines, risk platforms, and real-time data pipelines built with institutional-grade reliability.",
-    capabilities: [
-      "Order Management Systems (OMS/EMS)",
-      "High-frequency trading infrastructure",
-      "Real-time risk & P&L engines",
-      "FIX protocol & market connectivity",
-      "Regulatory reporting (MiFID II, EMIR)",
-      "Quantitative analytics platforms",
-    ],
-    tech: ["Python", "C++", "Rust", "Kafka", "TimescaleDB", "FIX"],
-  },
-  {
-    id: "cloud",
-    icon: Cloud,
-    title: "Cloud & DevOps",
-    tagline: "99.99% Uptime, Engineered",
-    color: "from-cyan-500 to-blue-500",
-    description:
-      "Multi-cloud architecture design, Kubernetes platform engineering, GitOps pipelines, and SRE practices that let your teams ship faster without sacrificing reliability.",
-    capabilities: [
-      "Multi-cloud architecture (AWS, GCP, Azure)",
-      "Kubernetes platform engineering",
-      "GitOps & CI/CD pipelines",
-      "Infrastructure as Code (Terraform/Pulumi)",
-      "SRE & observability stack",
-      "FinOps & cost optimization",
-    ],
-    tech: ["AWS", "GCP", "Kubernetes", "Terraform", "ArgoCD", "Prometheus"],
-  },
-  {
-    id: "web-mobile",
-    icon: Globe,
-    title: "Web & Mobile Apps",
-    tagline: "Pixel-perfect. Blazing fast.",
-    color: "from-orange-500 to-pink-500",
-    description:
-      "Full-stack web and mobile applications built with React, Next.js, Flutter, and React Native. From consumer apps handling millions of users to enterprise portals with complex workflows.",
-    capabilities: [
-      "React & Next.js web applications",
-      "React Native & Flutter mobile apps",
-      "GraphQL & REST API design",
-      "Performance optimization & Core Web Vitals",
-      "Accessibility (WCAG 2.1 AA)",
-      "Progressive Web Apps (PWA)",
-    ],
-    tech: ["React", "Next.js", "Flutter", "TypeScript", "GraphQL", "Tailwind"],
-  },
-  {
-    id: "security",
-    icon: ShieldCheck,
-    title: "Cybersecurity",
-    tagline: "Secure by Design",
-    color: "from-red-500 to-rose-500",
-    description:
-      "Comprehensive security engineering — from penetration testing and threat modelling to zero-trust architecture and compliance readiness for SOC 2, ISO 27001, and PCI DSS.",
-    capabilities: [
-      "Penetration testing & red team exercises",
-      "Zero-trust architecture design",
-      "SOC 2 & ISO 27001 compliance",
-      "Security code review & audits",
-      "SIEM & threat detection setup",
-      "Incident response planning",
-    ],
-    tech: ["OWASP", "Burp Suite", "Snyk", "Vault", "SIEM", "WAF"],
-  },
+// ─── Maps ──────────────────────────────────────────────────────────────────
+
+const ICON_MAP: Record<string, LucideIcon> = {
+  Brain, BarChart3, Cloud, Globe, ShieldCheck, Zap, Server, Code, Database, Lock,
+};
+
+const GRADIENT_MAP: Record<string, { card: string; icon: string }> = {
+  "purple-brand":  { card: "from-purple-500/10 to-brand-500/10",   icon: "from-purple-500 to-brand-500"   },
+  "green-emerald": { card: "from-green-500/10 to-emerald-500/10",  icon: "from-green-500 to-emerald-500"  },
+  "cyan-blue":     { card: "from-cyan-500/10 to-blue-500/10",      icon: "from-cyan-500 to-blue-500"      },
+  "orange-pink":   { card: "from-orange-500/10 to-pink-500/10",    icon: "from-orange-500 to-pink-500"    },
+  "red-rose":      { card: "from-red-500/10 to-rose-500/10",       icon: "from-red-500 to-rose-500"       },
+  "brand-cyan":    { card: "from-brand-500/10 to-cyan-500/10",     icon: "from-brand-500 to-cyan-500"     },
+  "yellow-orange": { card: "from-yellow-500/10 to-orange-500/10",  icon: "from-yellow-500 to-orange-500"  },
+};
+
+// ─── Debounce ──────────────────────────────────────────────────────────────
+
+function useDebounce<T>(value: T, delay: number): T {
+  const [debounced, setDebounced] = useState(value);
+  useEffect(() => {
+    const t = setTimeout(() => setDebounced(value), delay);
+    return () => clearTimeout(t);
+  }, [value, delay]);
+  return debounced;
+}
+
+// ─── Fallback data (shown while API loads) ─────────────────────────────────
+
+const FALLBACK_SERVICES: ServiceListItem[] = [
+  { id: -1, title: "AI & Machine Learning", slug: "ai-ml", tagline: "Intelligent Systems at Scale",
+    short_description: "Custom LLM pipelines, RAG architectures, computer vision, and predictive analytics for production.",
+    icon_name: "Brain", gradient: "purple-brand", cover_image_url: null, category: null,
+    technologies: [{ id: -1, name: "Python", logo: "🐍", order: 0 }, { id: -2, name: "PyTorch", logo: "🔥", order: 1 }],
+    featured: true, order: 0, status: "published", views_count: 0 },
+  { id: -2, title: "Financial Systems", slug: "financial", tagline: "Sub-millisecond. Zero-error.",
+    short_description: "OMS, HFT engines, risk platforms, and real-time pipelines with institutional-grade reliability.",
+    icon_name: "BarChart3", gradient: "green-emerald", cover_image_url: null, category: null,
+    technologies: [{ id: -3, name: "Rust", logo: "⚙️", order: 0 }, { id: -4, name: "Kafka", logo: "📨", order: 1 }],
+    featured: true, order: 1, status: "published", views_count: 0 },
+  { id: -3, title: "Cloud & DevOps", slug: "cloud", tagline: "99.99% Uptime, Engineered",
+    short_description: "Multi-cloud architecture, Kubernetes, GitOps pipelines, and SRE practices.",
+    icon_name: "Cloud", gradient: "cyan-blue", cover_image_url: null, category: null,
+    technologies: [{ id: -5, name: "AWS", logo: "☁️", order: 0 }, { id: -6, name: "Kubernetes", logo: "☸️", order: 1 }],
+    featured: false, order: 2, status: "published", views_count: 0 },
+  { id: -4, title: "Web & Mobile Apps", slug: "web-mobile", tagline: "Pixel-perfect. Blazing fast.",
+    short_description: "React, Next.js, Flutter, and React Native applications at any scale.",
+    icon_name: "Globe", gradient: "orange-pink", cover_image_url: null, category: null,
+    technologies: [{ id: -7, name: "React", logo: "⚛️", order: 0 }, { id: -8, name: "Flutter", logo: "📱", order: 1 }],
+    featured: false, order: 3, status: "published", views_count: 0 },
+  { id: -5, title: "Cybersecurity", slug: "security", tagline: "Secure by Design",
+    short_description: "Pen testing, zero-trust architecture, SOC 2 / ISO 27001 compliance.",
+    icon_name: "ShieldCheck", gradient: "red-rose", cover_image_url: null, category: null,
+    technologies: [{ id: -9, name: "OWASP", logo: "🛡️", order: 0 }, { id: -10, name: "Vault", logo: "🔒", order: 1 }],
+    featured: false, order: 4, status: "published", views_count: 0 },
 ];
 
+// ─── Service Card ──────────────────────────────────────────────────────────
+
+function ServiceCard({ service, index }: { service: ServiceListItem; index: number }) {
+  const Icon = ICON_MAP[service.icon_name] ?? Zap;
+  const g    = GRADIENT_MAP[service.gradient] ?? GRADIENT_MAP["purple-brand"];
+
+  return (
+    <motion.article
+      initial={{ opacity: 0, y: 24 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: 12 }}
+      transition={{ duration: 0.35, delay: index * 0.05 }}
+      layout
+      className="group relative flex flex-col rounded-2xl bg-card border border-border hover:border-brand-500/40 overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-brand-500/5"
+    >
+      {/* Cover image or gradient strip */}
+      {service.cover_image_url ? (
+        <img
+          src={service.cover_image_url}
+          alt={service.title}
+          className="h-40 w-full object-cover"
+        />
+      ) : (
+        <div className={`h-40 bg-gradient-to-br ${g.card} flex items-center justify-center`}>
+          <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${g.icon} flex items-center justify-center shadow-lg`}>
+            <Icon className="h-8 w-8 text-white" />
+          </div>
+        </div>
+      )}
+
+      <div className="flex flex-col flex-1 p-6">
+        {/* Category badge */}
+        {service.category && (
+          <span
+            className="inline-block self-start px-2.5 py-0.5 rounded-full text-xs font-medium mb-3"
+            style={{
+              backgroundColor: service.category.color + "20",
+              color: service.category.color,
+            }}
+          >
+            {service.category.name}
+          </span>
+        )}
+
+        {/* Featured badge */}
+        {service.featured && !service.category && (
+          <span className="inline-block self-start px-2.5 py-0.5 rounded-full text-xs font-medium bg-brand-500/10 text-brand-400 mb-3">
+            Featured
+          </span>
+        )}
+
+        <h2 className="font-bold text-lg text-foreground mb-1 group-hover:text-brand-400 transition-colors">
+          {service.title}
+        </h2>
+        {service.tagline && (
+          <p className="text-xs text-muted-foreground font-medium mb-3">{service.tagline}</p>
+        )}
+        <p className="text-sm text-muted-foreground leading-relaxed flex-1 line-clamp-3">
+          {service.short_description}
+        </p>
+
+        {/* Tech chips */}
+        {service.technologies.length > 0 && (
+          <div className="flex flex-wrap gap-1.5 mt-4">
+            {service.technologies.slice(0, 3).map((t) => (
+              <span
+                key={t.id}
+                className="px-2 py-0.5 rounded-md bg-accent text-accent-foreground text-xs font-medium"
+              >
+                {t.logo && <span className="mr-1">{t.logo}</span>}
+                {t.name}
+              </span>
+            ))}
+            {service.technologies.length > 3 && (
+              <span className="px-2 py-0.5 rounded-md bg-accent text-muted-foreground text-xs">
+                +{service.technologies.length - 3}
+              </span>
+            )}
+          </div>
+        )}
+
+        <Link
+          to={`/services/${service.slug}`}
+          className="mt-5 inline-flex items-center gap-1.5 text-sm font-medium text-brand-400 hover:text-brand-300 transition-colors group/link"
+        >
+          Explore service
+          <ArrowRight className="h-3.5 w-3.5 group-hover/link:translate-x-1 transition-transform" />
+        </Link>
+      </div>
+    </motion.article>
+  );
+}
+
+// ─── Page ──────────────────────────────────────────────────────────────────
+
 export default function ServicesPage() {
+  const [search,      setSearch]      = useState("");
+  const [activeCategory, setCategory] = useState<string>("all");
+  const [featuredOnly, setFeatured]   = useState(false);
+  const debouncedSearch               = useDebounce(search, 300);
+  const inputRef                      = useRef<HTMLInputElement>(null);
+
+  const params: ServiceParams = {
+    ...(debouncedSearch          && { search: debouncedSearch }),
+    ...(activeCategory !== "all" && { category: activeCategory }),
+    ...(featuredOnly             && { featured: true }),
+    status: "published",
+  };
+
+  const { data: services, isLoading: servicesLoading } = useQuery({
+    queryKey: servicesKeys.list(params),
+    queryFn:  () => servicesService.getAll(params).then((r) => r.data),
+    staleTime: 2 * 60 * 1000,
+    placeholderData: FALLBACK_SERVICES,
+  });
+
+  const { data: categories } = useQuery({
+    queryKey: servicesKeys.categories,
+    queryFn:  () => servicesService.getCategories().then((r) => r.data),
+    staleTime: 10 * 60 * 1000,
+  });
+
+  const displayedServices = services ?? FALLBACK_SERVICES;
+
   return (
     <>
-      <Helmet>
-        <title>Services — BlackMarlinBD</title>
-        <meta name="description" content="Enterprise IT services: AI, financial systems, cloud, web/mobile, and cybersecurity." />
-      </Helmet>
+      <SEOHead
+        pageKey="services"
+        fallback={{
+          title: "Services — BlackMarlinBD",
+          description: "Enterprise IT services: AI & ML, financial systems, cloud infrastructure, web & mobile, and cybersecurity.",
+        }}
+      />
 
       <main className="pt-28 pb-24">
         <div className="container mx-auto px-4">
-          {/* Header */}
+
+          {/* ── Header ─────────────────────────────────────────────────── */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-center mb-20"
+            className="text-center mb-14"
           >
-            <h1 className="text-5xl sm:text-6xl font-bold mb-6">
+            <h1 className="text-5xl sm:text-6xl font-bold mb-4">
               Technology <span className="gradient-text">Services</span>
             </h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              End-to-end engineering services — from strategy to production deployment.
+              End-to-end engineering — from strategy to production deployment.
             </p>
           </motion.div>
 
-          {/* Service sections */}
-          <div className="space-y-32">
-            {services.map((service, i) => {
-              const Icon = service.icon;
-              const isEven = i % 2 === 0;
-              return (
-                <motion.section
-                  key={service.id}
-                  id={service.id}
-                  initial={{ opacity: 0, y: 40 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, margin: "-100px" }}
-                  className={`grid grid-cols-1 lg:grid-cols-2 gap-12 items-center ${!isEven ? "lg:[&>*:first-child]:order-2" : ""}`}
+          {/* ── Search + Filters ────────────────────────────────────────── */}
+          <div className="max-w-3xl mx-auto mb-12 space-y-4">
+            {/* Search bar */}
+            <div className="relative">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+              <input
+                ref={inputRef}
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search services…"
+                className="w-full pl-11 pr-10 py-3 rounded-xl bg-card border border-border focus:border-brand-500/50 focus:ring-2 focus:ring-brand-500/20 outline-none text-sm transition-all"
+              />
+              {search && (
+                <button
+                  onClick={() => { setSearch(""); inputRef.current?.focus(); }}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                 >
-                  {/* Content */}
-                  <div>
-                    <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gradient-to-r ${service.color} mb-4`}>
-                      <Icon className="h-4 w-4 text-white" />
-                      <span className="text-white text-sm font-medium">{service.tagline}</span>
-                    </div>
-                    <h2 className="text-4xl font-bold mb-4">{service.title}</h2>
-                    <p className="text-muted-foreground leading-relaxed mb-6">{service.description}</p>
+                  <X className="h-4 w-4" />
+                </button>
+              )}
+            </div>
 
-                    <ul className="space-y-2 mb-6">
-                      {service.capabilities.map((cap) => (
-                        <li key={cap} className="flex items-center gap-2 text-sm">
-                          <Check className="h-4 w-4 text-brand-400 flex-shrink-0" />
-                          {cap}
-                        </li>
-                      ))}
-                    </ul>
+            {/* Category chips */}
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={() => setCategory("all")}
+                className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${
+                  activeCategory === "all"
+                    ? "bg-brand-500 text-white shadow-md shadow-brand-500/20"
+                    : "bg-card border border-border text-muted-foreground hover:border-brand-500/50"
+                }`}
+              >
+                All
+              </button>
 
-                    <div className="flex flex-wrap gap-2 mb-8">
-                      {service.tech.map((t) => (
-                        <span key={t} className="px-2.5 py-1 rounded-lg bg-accent text-accent-foreground text-xs font-medium">
-                          {t}
-                        </span>
-                      ))}
-                    </div>
+              {categories?.map((cat) => (
+                <button
+                  key={cat.slug}
+                  onClick={() => setCategory(cat.slug === activeCategory ? "all" : cat.slug)}
+                  className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${
+                    activeCategory === cat.slug
+                      ? "text-white shadow-md"
+                      : "bg-card border border-border text-muted-foreground hover:border-brand-500/50"
+                  }`}
+                  style={
+                    activeCategory === cat.slug
+                      ? { backgroundColor: cat.color, boxShadow: `0 4px 12px ${cat.color}40` }
+                      : undefined
+                  }
+                >
+                  {cat.name}
+                  {cat.service_count > 0 && (
+                    <span className="ml-1.5 opacity-60">({cat.service_count})</span>
+                  )}
+                </button>
+              ))}
 
-                    <Link to="/contact">
-                      <Button variant="gradient" className="group">
-                        Discuss Your Project
-                        <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                      </Button>
-                    </Link>
-                  </div>
-
-                  {/* Visual */}
-                  <div className={`relative rounded-3xl bg-gradient-to-br ${service.color} p-1 shadow-2xl`}>
-                    <div className="rounded-[22px] bg-card p-8 h-80 flex items-center justify-center">
-                      <Icon className="h-24 w-24 text-muted-foreground/30" strokeWidth={1} />
-                    </div>
-                    {/* Floating badge */}
-                    <div className="absolute -bottom-4 -right-4 px-4 py-2 rounded-xl glass dark:glass-dark border border-border shadow-xl text-sm font-medium">
-                      {service.tech[0]} Expert Team
-                    </div>
-                  </div>
-                </motion.section>
-              );
-            })}
+              <button
+                onClick={() => setFeatured((f) => !f)}
+                className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${
+                  featuredOnly
+                    ? "bg-amber-500 text-white shadow-md shadow-amber-500/20"
+                    : "bg-card border border-border text-muted-foreground hover:border-amber-500/50"
+                }`}
+              >
+                ★ Featured
+              </button>
+            </div>
           </div>
+
+          {/* ── Results count ───────────────────────────────────────────── */}
+          <div className="flex items-center justify-between mb-6">
+            <p className="text-sm text-muted-foreground">
+              {servicesLoading
+                ? "Loading…"
+                : `${displayedServices.length} service${displayedServices.length !== 1 ? "s" : ""}`}
+            </p>
+            {(search || activeCategory !== "all" || featuredOnly) && (
+              <button
+                onClick={() => { setSearch(""); setCategory("all"); setFeatured(false); }}
+                className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1"
+              >
+                <X className="h-3 w-3" /> Clear filters
+              </button>
+            )}
+          </div>
+
+          {/* ── Service grid ────────────────────────────────────────────── */}
+          {displayedServices.length === 0 ? (
+            <div className="text-center py-24 text-muted-foreground">
+              <Search className="h-10 w-10 mx-auto mb-4 opacity-30" />
+              <p className="text-lg font-medium">No services match your search.</p>
+              <p className="text-sm mt-1">Try a different keyword or clear the filters.</p>
+            </div>
+          ) : (
+            <motion.div
+              layout
+              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+            >
+              <AnimatePresence mode="popLayout">
+                {displayedServices.map((service, i) => (
+                  <ServiceCard key={service.id} service={service} index={i} />
+                ))}
+              </AnimatePresence>
+            </motion.div>
+          )}
         </div>
       </main>
     </>

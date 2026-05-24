@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Helmet } from "react-helmet-async";
+import { SEOHead } from "@/components/seo/SEOHead";
 import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import { MapPin, Clock, Briefcase, ChevronDown, ChevronUp } from "lucide-react";
@@ -134,10 +134,13 @@ export default function CareersPage() {
 
   return (
     <>
-      <Helmet>
-        <title>Careers — BlackMarlinBD</title>
-        <meta name="description" content="Join BlackMarlinBD and build the future of technology." />
-      </Helmet>
+      <SEOHead
+        pageKey="careers"
+        fallback={{
+          title: "Careers — BlackMarlinBD",
+          description: "Join BlackMarlinBD and build the future of technology.",
+        }}
+      />
 
       <main className="pt-28 pb-24">
         <div className="container mx-auto px-4">

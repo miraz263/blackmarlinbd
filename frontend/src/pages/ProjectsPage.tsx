@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Helmet } from "react-helmet-async";
+import { SEOHead } from "@/components/seo/SEOHead";
 import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import { Search, ExternalLink, Github, ArrowRight } from "lucide-react";
@@ -34,10 +34,13 @@ export default function ProjectsPage() {
 
   return (
     <>
-      <Helmet>
-        <title>Projects — BlackMarlinBD</title>
-        <meta name="description" content="Explore our portfolio of enterprise software projects." />
-      </Helmet>
+      <SEOHead
+        pageKey="projects"
+        fallback={{
+          title: "Projects — BlackMarlinBD",
+          description: "Explore our portfolio of enterprise software projects.",
+        }}
+      />
 
       <main className="pt-28 pb-24">
         <div className="container mx-auto px-4">

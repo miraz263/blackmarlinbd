@@ -1,0 +1,30 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(docker restart *)",
+      "Bash(docker exec *)",
+      "PowerShell(docker exec blackmarlinbd-nginx-1 cat /etc/nginx/nginx.conf)",
+      "PowerShell(docker exec blackmarlinbd-nginx-1 ps aux)",
+      "PowerShell(curl -s -o $null -w \"%{http_code}\" http://localhost/login)",
+      "PowerShell(try { $r = Invoke-WebRequest -Uri \"http://localhost/login\" -UseBasicParsing; \"Status: $\\($r.StatusCode\\)\" } catch { \"Error: $_\" })",
+      "PowerShell(docker exec blackmarlinbd-backend-1 ps aux)",
+      "PowerShell(docker exec blackmarlinbd-backend-1 sh -c \"cat /proc/1/cmdline | tr '\\\\0' ' '\")",
+      "Bash(docker-compose up *)",
+      "PowerShell(docker exec blackmarlinbd-backend-1 sh -c \"cat /proc/1/cmdline | tr '\\\\0' '\\\\n'\")",
+      "PowerShell(try { $r = Invoke-WebRequest -Uri \"http://localhost/api/v1/projects/featured/\" -UseBasicParsing; \"Status: $\\($r.StatusCode\\)\" } catch { \"Error: $\\($_.Exception.Response.StatusCode.value__\\) $\\($_.Exception.Message\\)\" })",
+      "PowerShell(try { $r = Invoke-WebRequest -Uri \"http://localhost/api/v1/projects/featured/\" -UseBasicParsing; \"Status: $\\($r.StatusCode\\) - Body: $\\($r.Content.Substring\\(0, [Math]::Min\\(100, $r.Content.Length\\)\\)\\)\" } catch { \"Error: $\\($_.Exception.Response.StatusCode.value__\\) $\\($_.Exception.Message\\)\" })",
+      "PowerShell(docker exec blackmarlinbd-backend-1 python manage.py shell -c \"from django.contrib.auth import get_user_model; U = get_user_model\\(\\); admins = U.objects.filter\\(is_superuser=True\\).values\\('username', 'email'\\); print\\(list\\(admins\\)\\)\")",
+      "PowerShell(docker exec -it blackmarlinbd-backend-1 python manage.py changepassword saied)",
+      "PowerShell(docker exec blackmarlinbd-backend-1 python manage.py shell -c \"from django.contrib.auth import get_user_model; U = get_user_model\\(\\); u = U.objects.get\\(username='saied'\\); u.set_password\\('NewPassword123!'\\); u.save\\(\\); print\\('Password updated.'\\)\")",
+      "PowerShell(try { $r = Invoke-WebRequest -Uri \"http://localhost/\" -UseBasicParsing; \"Status: $\\($r.StatusCode\\), Length: $\\($r.Content.Length\\), Preview: $\\($r.Content.Substring\\(0, [Math]::Min\\(200, $r.Content.Length\\)\\)\\)\" } catch { \"Error: $_\" })",
+      "PowerShell(try { $r = Invoke-WebRequest -Uri \"http://localhost/\" -UseBasicParsing; $r.Content } catch { \"Error: $_\" })",
+      "PowerShell(try { $r = Invoke-WebRequest -Uri \"http://localhost/assets/index-DZKql3kb.js\" -UseBasicParsing; \"Status: $\\($r.StatusCode\\), Size: $\\($r.Content.Length\\) bytes\" } catch { \"Error: $\\($_.Exception.Response.StatusCode.value__\\) - $_\" })",
+      "PowerShell(try { $r = Invoke-WebRequest -Uri \"http://localhost/assets/index-DOJvU0Ja.css\" -UseBasicParsing; \"Status: $\\($r.StatusCode\\), Size: $\\($r.Content.Length\\) bytes\" } catch { \"Error: $\\($_.Exception.Response.StatusCode.value__\\) - $_\" })",
+      "PowerShell(Start-Sleep -Seconds 3; try { $r = Invoke-WebRequest -Uri \"http://localhost/login\" -UseBasicParsing; \"Status: $\\($r.StatusCode\\), Size: $\\($r.Content.Length\\)\" } catch { \"Error: $_\" })",
+      "PowerShell(docker exec blackmarlinbd-frontend-1 grep -r \"isAuthCheck\\\\|auth/me\\\\|pathname\" /usr/share/nginx/html/assets/ 2>&1)",
+      "PowerShell(head -5)",
+      "PowerShell(docker exec blackmarlinbd-frontend-1 ls /usr/share/nginx/html/assets/)",
+      "PowerShell(docker exec blackmarlinbd-frontend-1 cat /usr/share/nginx/html/index.html)"
+    ]
+  }
+}

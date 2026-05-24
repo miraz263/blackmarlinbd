@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import { FolderKanban, FileText, Briefcase, Users, TrendingUp, Eye } from "lucide-react";
+import { FolderKanban, FileText, Briefcase, Eye } from "lucide-react";
 import { projectsApi } from "@/services/api/projects";
 import { blogApi } from "@/services/api/blog";
 import { jobsApi } from "@/services/api/jobs";

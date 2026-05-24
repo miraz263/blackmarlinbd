@@ -5,11 +5,20 @@ from datetime import timedelta
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 env = environ.Env(DEBUG=(bool, False))
-environ.Env.read_env(BASE_DIR / ".env")
+# Look for .env in backend/ first, then fall back to repo root (docker-compose layout)
+_env_file = BASE_DIR / ".env"
+if not _env_file.exists():
+    _env_file = BASE_DIR.parent / ".env"
+environ.Env.read_env(_env_file)
 
 SECRET_KEY = env("SECRET_KEY")
 DEBUG = env("DEBUG")
 ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=["localhost", "127.0.0.1"])
+
+AUTHENTICATION_BACKENDS = [
+    "apps.users.backends.EmailBackend",
+    "django.contrib.auth.backends.ModelBackend",
+]
 
 # Application definition
 DJANGO_APPS = [
@@ -42,6 +51,18 @@ LOCAL_APPS = [
     "apps.contacts",
     "apps.jobs",
     "apps.core",
+    "apps.site_settings",
+    "apps.homepage",
+    "apps.about",
+    "apps.services",
+    "apps.media_library",
+    "apps.seo",
+    "apps.rbac",
+    "apps.page_builder",
+    "apps.workflow",
+    "apps.analytics",
+    "apps.translations",
+    "apps.ai",
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -56,6 +77,8 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "apps.analytics.middleware.PageViewMiddleware",
+    "apps.translations.middleware.LanguageMiddleware",
 ]
 
 ROOT_URLCONF = "config.urls"
@@ -100,9 +123,6 @@ CACHES = {
     "default": {
         "BACKEND": "django.core.cache.backends.redis.RedisCache",
         "LOCATION": env("REDIS_URL", default="redis://localhost:6379/1"),
-        "OPTIONS": {
-            "CLIENT_CLASS": "django_redis.client.DefaultClient",
-        },
     }
 }
 
@@ -224,7 +244,16 @@ SPECTACULAR_SETTINGS = {
     "SERVE_INCLUDE_SCHEMA": False,
 }
 
+# AI
+AI_DEFAULT_PROVIDER = env("AI_DEFAULT_PROVIDER", default="openai")
+AI_MAX_TOKENS       = env.int("AI_MAX_TOKENS",       default=2048)
+OPENAI_API_KEY      = env("OPENAI_API_KEY",           default="")
+OPENAI_MODEL        = env("OPENAI_MODEL",             default="gpt-4o-mini")
+GEMINI_API_KEY      = env("GEMINI_API_KEY",           default="")
+GEMINI_MODEL        = env("GEMINI_MODEL",             default="gemini-1.5-flash")
+
 # Security
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = "DENY"
+SECURE_REFERRER_POLICY = "strict-origin-when-cross-origin"

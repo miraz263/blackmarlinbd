@@ -7,11 +7,13 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { useThemeStore } from "@/store/themeStore";
 import { useAuthStore } from "@/store/authStore";
+import { useAnalyticsTrack } from "@/hooks/useAnalyticsTrack";
 
 // Lazy-loaded pages
 const HomePage = lazy(() => import("@/pages/HomePage"));
 const AboutPage = lazy(() => import("@/pages/AboutPage"));
 const ServicesPage = lazy(() => import("@/pages/ServicesPage"));
+const ServiceDetailPage = lazy(() => import("@/pages/ServiceDetailPage"));
 const ProjectsPage = lazy(() => import("@/pages/ProjectsPage"));
 const BlogPage = lazy(() => import("@/pages/BlogPage"));
 const CareersPage = lazy(() => import("@/pages/CareersPage"));
@@ -19,6 +21,15 @@ const ContactPage = lazy(() => import("@/pages/ContactPage"));
 const LoginPage = lazy(() => import("@/pages/LoginPage"));
 const DashboardLayout = lazy(() => import("@/pages/dashboard/DashboardLayout"));
 const DashboardOverview = lazy(() => import("@/pages/dashboard/DashboardOverview"));
+const MediaManagerPage = lazy(() => import("@/pages/dashboard/MediaManagerPage"));
+const RolesPage        = lazy(() => import("@/pages/dashboard/RolesPage"));
+const PagesPage        = lazy(() => import("@/pages/dashboard/PagesPage"));
+const PageEditorPage   = lazy(() => import("@/pages/dashboard/PageEditorPage"));
+const DynamicPage      = lazy(() => import("@/pages/DynamicPage"));
+const WorkflowPage       = lazy(() => import("@/pages/dashboard/WorkflowPage"));
+const AnalyticsPage      = lazy(() => import("@/pages/dashboard/AnalyticsPage"));
+const TranslationsPage   = lazy(() => import("@/pages/dashboard/TranslationsPage"));
+const AIPage             = lazy(() => import("@/pages/dashboard/AIPage"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -51,6 +62,7 @@ function PublicLayout({ children }: { children: React.ReactNode }) {
 function AppContent() {
   const { theme } = useThemeStore();
   const { fetchMe } = useAuthStore();
+  useAnalyticsTrack();
 
   useEffect(() => {
     // Apply theme on mount
@@ -76,15 +88,25 @@ function AppContent() {
         <Route path="/" element={<PublicLayout><HomePage /></PublicLayout>} />
         <Route path="/about" element={<PublicLayout><AboutPage /></PublicLayout>} />
         <Route path="/services" element={<PublicLayout><ServicesPage /></PublicLayout>} />
+        <Route path="/services/:slug" element={<PublicLayout><ServiceDetailPage /></PublicLayout>} />
         <Route path="/projects" element={<PublicLayout><ProjectsPage /></PublicLayout>} />
         <Route path="/blog" element={<PublicLayout><BlogPage /></PublicLayout>} />
         <Route path="/careers" element={<PublicLayout><CareersPage /></PublicLayout>} />
         <Route path="/contact" element={<PublicLayout><ContactPage /></PublicLayout>} />
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/p/:slug" element={<DynamicPage />} />
 
         {/* Dashboard routes */}
         <Route path="/dashboard" element={<DashboardLayout />}>
           <Route index element={<DashboardOverview />} />
+          <Route path="media" element={<Suspense fallback={<PageLoader />}><MediaManagerPage /></Suspense>} />
+          <Route path="roles" element={<Suspense fallback={<PageLoader />}><RolesPage /></Suspense>} />
+          <Route path="pages" element={<Suspense fallback={<PageLoader />}><PagesPage /></Suspense>} />
+          <Route path="pages/:slug/edit" element={<Suspense fallback={<PageLoader />}><PageEditorPage /></Suspense>} />
+          <Route path="workflow"   element={<Suspense fallback={<PageLoader />}><WorkflowPage /></Suspense>} />
+          <Route path="analytics"     element={<Suspense fallback={<PageLoader />}><AnalyticsPage /></Suspense>} />
+          <Route path="translations" element={<Suspense fallback={<PageLoader />}><TranslationsPage /></Suspense>} />
+          <Route path="ai"           element={<Suspense fallback={<PageLoader />}><AIPage /></Suspense>} />
           <Route path="projects" element={<Suspense fallback={<PageLoader />}><div className="p-4 text-muted-foreground">Projects manager — full CRUD</div></Suspense>} />
           <Route path="blog" element={<Suspense fallback={<PageLoader />}><div className="p-4 text-muted-foreground">Blog manager — full CRUD</div></Suspense>} />
           <Route path="jobs" element={<Suspense fallback={<PageLoader />}><div className="p-4 text-muted-foreground">Jobs manager — full CRUD</div></Suspense>} />

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Helmet } from "react-helmet-async";
+import { SEOHead } from "@/components/seo/SEOHead";
 import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
@@ -33,10 +33,13 @@ export default function BlogPage() {
 
   return (
     <>
-      <Helmet>
-        <title>Blog — BlackMarlinBD</title>
-        <meta name="description" content="Technical insights, engineering guides, and industry analysis from BlackMarlinBD." />
-      </Helmet>
+      <SEOHead
+        pageKey="blog"
+        fallback={{
+          title: "Blog — BlackMarlinBD",
+          description: "Technical insights, engineering guides, and industry analysis from BlackMarlinBD.",
+        }}
+      />
 
       <main className="pt-28 pb-24">
         <div className="container mx-auto px-4">
