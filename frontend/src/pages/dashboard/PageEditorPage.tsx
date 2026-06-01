@@ -1,14 +1,14 @@
 import { useState, useCallback } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useParams, Link } from "react-router-dom";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft, Plus, Trash2, GripVertical, Eye, EyeOff, Save,
   Layers, AlignLeft, ImageIcon, Film, HelpCircle, Grid,
-  BarChart3, Users, Zap, X, ChevronDown, ChevronUp, Pencil,
+  BarChart3, Users, Zap, X, ChevronDown, ChevronUp,
 } from "lucide-react";
 import { pageBuilderService, pbKeys } from "@/services/pageBuilderService";
-import type { BuilderBlock, BuilderBlockType, BuilderSection, BuilderPage } from "@/types";
+import type { BuilderBlock, BuilderBlockType, BuilderSection } from "@/types";
 
 // ─── Block type catalogue ──────────────────────────────────────────────────
 
@@ -264,44 +264,6 @@ function BlockContentEditor({
   }
 }
 
-// ─── Section style editor ──────────────────────────────────────────────────
-
-function SectionStyleEditor({
-  style, onChange,
-}: { style: Record<string, unknown>; onChange: (key: string, val: string) => void }) {
-  const s = (k: string) => (style[k] as string) ?? "";
-  return (
-    <div className="space-y-4">
-      <Field label="Background Color (CSS)">
-        <input className={INPUT} value={s("background_color")} onChange={(e) => onChange("background_color", e.target.value)} placeholder="#1e1e2e or rgb(…)" />
-      </Field>
-      <Field label="Background Image URL">
-        <input className={INPUT} value={s("background_image")} onChange={(e) => onChange("background_image", e.target.value)} />
-      </Field>
-      <Field label="Text Color (CSS)">
-        <input className={INPUT} value={s("text_color")} onChange={(e) => onChange("text_color", e.target.value)} placeholder="#ffffff" />
-      </Field>
-      <Field label="Padding">
-        <select className={INPUT} value={s("padding") || "md"} onChange={(e) => onChange("padding", e.target.value)}>
-          <option value="sm">Small (py-8)</option>
-          <option value="md">Medium (py-16)</option>
-          <option value="lg">Large (py-24)</option>
-          <option value="xl">XL (py-32)</option>
-        </select>
-      </Field>
-      <Field label="Max Width">
-        <select className={INPUT} value={s("max_width") || "xl"} onChange={(e) => onChange("max_width", e.target.value)}>
-          <option value="sm">Small (640px)</option>
-          <option value="md">Medium (768px)</option>
-          <option value="lg">Large (1024px)</option>
-          <option value="xl">XL (1280px)</option>
-          <option value="full">Full width</option>
-        </select>
-      </Field>
-    </div>
-  );
-}
-
 // ─── Add block modal ───────────────────────────────────────────────────────
 
 function AddBlockModal({ onSelect, onClose }: { onSelect: (t: BuilderBlockType) => void; onClose: () => void }) {
@@ -395,7 +357,7 @@ function BlockRow({
 
 function SectionCard({
   section, slug, selectedBlockId, onSelectBlock, isDragOver,
-  onDragStart, onDragOver, onDragEnd, onAddBlock, onDeleteSection, onRefetch,
+  onDragStart, onDragOver, onDragEnd, onAddBlock, onDeleteSection,
 }: {
   section: BuilderSection;
   slug: string;
@@ -407,7 +369,6 @@ function SectionCard({
   onDragEnd: () => void;
   onAddBlock: (sectionId: number) => void;
   onDeleteSection: () => void;
-  onRefetch: () => void;
 }) {
   const qc = useQueryClient();
   const [collapsed, setCollapsed] = useState(false);
@@ -647,8 +608,7 @@ function RightPanel({
 
 export default function PageEditorPage() {
   const { slug } = useParams<{ slug: string }>();
-  const navigate  = useNavigate();
-  const qc        = useQueryClient();
+  const qc = useQueryClient();
 
   const [selectedBlock,   setSelectedBlock]   = useState<BuilderBlock | null>(null);
   const [selectedSection, setSelectedSection] = useState<BuilderSection | null>(null);
@@ -785,7 +745,6 @@ export default function PageEditorPage() {
                   onDragEnd={() => handleSectionDrop(sectionDragOver ?? i)}
                   onAddBlock={(sId) => setAddBlockTarget(sId)}
                   onDeleteSection={() => deleteSection(section.id)}
-                  onRefetch={invalidate}
                 />
               ))}
               <button

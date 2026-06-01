@@ -4,20 +4,26 @@ import {
   ArrowRight, Play, Sparkles, Zap, Star, Users, TrendingUp, Award, Globe,
   type LucideIcon,
 } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { homepageQueryOptions } from "@/services/homepageService";
+import { useTranslation } from "@/hooks/useTranslation";
+import { useHomepageQuery } from "@/hooks/useHomepageQuery";
 import type { HeroButton, StatisticCard } from "@/types";
 
 const ICON_MAP: Record<string, LucideIcon> = {
   Zap, Star, Users, TrendingUp, Award, Globe,
 };
 
-const floatingBadges = [
-  { text: "AI-Powered", color: "from-purple-500 to-brand-500", x: "-5%", y: "20%" },
-  { text: "Cloud Native", color: "from-cyan-500 to-blue-500", x: "85%", y: "15%" },
-  { text: "Zero Downtime", color: "from-green-500 to-emerald-500", x: "80%", y: "75%" },
-  { text: "Secure by Design", color: "from-orange-500 to-red-500", x: "-8%", y: "70%" },
+// Known English defaults — detect untranslated DB content and prefer i18n instead
+const EN_BADGE = "Trusted by Fortune 500 Companies";
+const EN_TITLE = "We Build Intelligent Systems That Scale";
+const EN_DESC =
+  "BlackMarlinBD is a global IT firm specializing in AI, financial technology, cloud infrastructure, and enterprise software — engineering tomorrow's solutions today.";
+
+const FLOATING_BADGE_CONFIGS = [
+  { key: "hero.floating_ai",       color: "from-purple-500 to-brand-500", x: "-5%", y: "20%" },
+  { key: "hero.floating_cloud",    color: "from-cyan-500 to-blue-500",    x: "85%", y: "15%" },
+  { key: "hero.floating_downtime", color: "from-green-500 to-emerald-500", x: "80%", y: "75%" },
+  { key: "hero.floating_secure",   color: "from-orange-500 to-red-500",   x: "-8%", y: "70%" },
 ];
 
 const container = {
@@ -29,10 +35,6 @@ const item = {
   hidden: { y: 30, opacity: 0 },
   visible: { y: 0, opacity: 1, transition: { duration: 0.6, ease: "easeOut" } },
 };
-
-const FALLBACK_STATS: StatisticCard[] = [
-  { id: 0, label: "Uptime SLA", value: "99.9%", icon_name: "Zap", order: 0, is_published: true },
-];
 
 function HeroButtonLink({ btn }: { btn: HeroButton }) {
   const isExternal = btn.url.startsWith("http");
@@ -59,11 +61,25 @@ function HeroButtonLink({ btn }: { btn: HeroButton }) {
 }
 
 export function Hero() {
-  const { data } = useQuery(homepageQueryOptions);
+  const { data } = useHomepageQuery();
+  const { t } = useTranslation();
 
   const hero = data?.hero;
-  const stats = data?.statistics?.length ? data.statistics : FALLBACK_STATS;
   const buttons = hero?.buttons?.filter((b) => b.is_published) ?? [];
+
+  // If DB returns the unchanged English default, use i18n translation instead.
+  // If admin has customized the content (different string), the DB value is used as-is.
+  // When admin adds a DB translation via the Translations Dashboard, the API returns that
+  // translated string (different from EN_*), so it takes priority automatically.
+  const heroBadge = hero?.badge_text && hero.badge_text !== EN_BADGE ? hero.badge_text : t("hero.badge");
+  const heroTitle = hero?.title && hero.title !== EN_TITLE ? hero.title : t("hero.title");
+  const heroDesc = hero?.description && hero.description !== EN_DESC ? hero.description : t("hero.description");
+
+  const stats: StatisticCard[] = data?.statistics?.length
+    ? data.statistics
+    : [{ id: 0, label: t("hero.stat_uptime"), value: "99.9%", icon_name: "Zap", order: 0, is_published: true }];
+
+  const floatingBadges = FLOATING_BADGE_CONFIGS.map((cfg) => ({ ...cfg, text: t(cfg.key) }));
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
@@ -90,9 +106,9 @@ export function Hero() {
       </div>
 
       {/* Floating badges */}
-      {floatingBadges.map((badge, i) => (
+      {floatingBadges.map((fb, i) => (
         <motion.div
-          key={badge.text}
+          key={fb.key}
           initial={{ opacity: 0, scale: 0.5 }}
           animate={{ opacity: 1, scale: 1, y: [0, -10, 0] }}
           transition={{
@@ -101,10 +117,10 @@ export function Hero() {
             y: { duration: 4 + i, repeat: Infinity, ease: "easeInOut", delay: i * 0.5 },
           }}
           className="absolute hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-full glass dark:glass-dark border border-border text-xs font-medium"
-          style={{ left: badge.x, top: badge.y }}
+          style={{ left: fb.x, top: fb.y }}
         >
-          <span className={`w-2 h-2 rounded-full bg-gradient-to-r ${badge.color}`} />
-          {badge.text}
+          <span className={`w-2 h-2 rounded-full bg-gradient-to-r ${fb.color}`} />
+          {fb.text}
         </motion.div>
       ))}
 
@@ -117,7 +133,7 @@ export function Hero() {
             className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-brand-500/30 bg-brand-500/10 text-brand-400 text-sm font-medium mb-8"
           >
             <Sparkles className="h-4 w-4" />
-            {hero?.badge_text ?? "Trusted by Fortune 500 Companies"}
+            {heroBadge}
             <ArrowRight className="h-3 w-3" />
           </motion.div>
 
@@ -126,9 +142,7 @@ export function Hero() {
             variants={item}
             className="text-5xl sm:text-6xl lg:text-7xl font-bold leading-tight tracking-tight mb-6"
           >
-            <span className="gradient-text">
-              {hero?.title ?? "We Build Intelligent Systems That Scale"}
-            </span>
+            <span className="gradient-text">{heroTitle}</span>
           </motion.h1>
 
           {/* Subtext */}
@@ -136,8 +150,7 @@ export function Hero() {
             variants={item}
             className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto mb-10 leading-relaxed"
           >
-            {hero?.description ??
-              "BlackMarlinBD is a global IT firm specializing in AI, financial technology, cloud infrastructure, and enterprise software — engineering tomorrow's solutions today."}
+            {heroDesc}
           </motion.p>
 
           {/* CTAs */}
@@ -151,14 +164,14 @@ export function Hero() {
               <>
                 <Link to="/contact">
                   <Button variant="gradient" size="xl" className="group">
-                    Start Your Project
+                    {t("hero.start_project")}
                     <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                   </Button>
                 </Link>
                 <Link to="/projects">
                   <Button variant="outline" size="xl" className="group gap-2">
                     <Play className="h-4 w-4 fill-current" />
-                    View Our Work
+                    {t("hero.view_work")}
                   </Button>
                 </Link>
               </>
@@ -190,7 +203,7 @@ export function Hero() {
           transition={{ duration: 2, repeat: Infinity }}
           className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 text-muted-foreground"
         >
-          <span className="text-xs">Scroll</span>
+          <span className="text-xs">{t("hero.scroll")}</span>
           <div className="w-px h-8 bg-gradient-to-b from-muted-foreground to-transparent" />
         </motion.div>
       </div>

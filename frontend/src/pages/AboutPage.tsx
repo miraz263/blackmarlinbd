@@ -1,19 +1,36 @@
 import { motion } from "framer-motion";
 import { SEOHead } from "@/components/seo/SEOHead";
 import { Link } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
 import {
   Users, Globe2, Award, Code2, Mail,
   Zap, Shield, Heart, Lightbulb, Star, Target, Rocket, type LucideIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { aboutQueryOptions } from "@/services/aboutService";
+import { useAboutQuery } from "@/hooks/useAboutQuery";
+import { useTranslation } from "@/hooks/useTranslation";
 import type { CoreValue, TeamMember } from "@/types";
 
 // ─── Icon maps ─────────────────────────────────────────────────────────────
 
 const VALUE_ICON_MAP: Record<string, LucideIcon> = {
   Zap, Shield, Heart, Lightbulb, Star, Target, Rocket, Code2, Award, Globe2, Users,
+};
+
+// ─── Known English defaults — detect untranslated DB content ───────────────
+
+const EN_PAGE_BADGE = "Our Story";
+const EN_PAGE_TITLE = "Engineering the Digital Future";
+
+// For the mission/vision titles (short, exact match is reliable)
+const EN_MISSION_TITLE = "Our Mission";
+const EN_VISION_TITLE  = "Our Vision";
+
+// Maps known English core-value titles to i18n keys
+const VALUE_I18N: Record<string, { titleKey: string; descKey: string }> = {
+  "Engineering Excellence": { titleKey: "about.val_excellence_title", descKey: "about.val_excellence_desc" },
+  "Client Obsession":       { titleKey: "about.val_client_title",     descKey: "about.val_client_desc" },
+  "Radical Transparency":   { titleKey: "about.val_transparency_title", descKey: "about.val_transparency_desc" },
+  "Continuous Innovation":  { titleKey: "about.val_innovation_title",  descKey: "about.val_innovation_desc" },
 };
 
 // ─── Fallback data ─────────────────────────────────────────────────────────
@@ -43,11 +60,11 @@ const AVATAR_GRADIENTS = [
   "from-orange-500 to-red-500",
 ];
 
-const STATS = [
-  { icon: Code2,  value: "1M+",  label: "Lines of Production Code" },
-  { icon: Globe2, value: "25+",  label: "Countries Served" },
-  { icon: Users,  value: "120+", label: "Engineers Worldwide" },
-  { icon: Award,  value: "15+",  label: "Industry Awards" },
+const STAT_KEYS = [
+  { icon: Code2,  value: "1M+",  key: "about.stat_code" },
+  { icon: Globe2, value: "25+",  key: "about.stat_countries" },
+  { icon: Users,  value: "120+", key: "about.stat_engineers" },
+  { icon: Award,  value: "15+",  key: "about.stat_awards" },
 ];
 
 // ─── Sub-components ────────────────────────────────────────────────────────
@@ -69,7 +86,6 @@ function TeamCard({ member, index }: { member: TeamMember; index: number }) {
       transition={{ delay: index * 0.08 }}
       className="group flex flex-col items-center text-center"
     >
-      {/* Photo or gradient avatar */}
       {member.photo_url ? (
         <img
           src={member.photo_url}
@@ -93,7 +109,6 @@ function TeamCard({ member, index }: { member: TeamMember; index: number }) {
         </p>
       )}
 
-      {/* Social links */}
       {(member.linkedin || member.github || member.email) && (
         <div className="flex items-center gap-2">
           {member.linkedin && (
@@ -137,35 +152,55 @@ function TeamCard({ member, index }: { member: TeamMember; index: number }) {
   );
 }
 
-function ValueCard({ value, index }: { value: CoreValue; index: number }) {
+function ValueCard({ value }: { value: CoreValue }) {
   const Icon = VALUE_ICON_MAP[value.icon_name] ?? Zap;
   return (
-    <motion.div
-      initial={{ opacity: 0, x: index % 2 === 0 ? -20 : 20 }}
-      whileInView={{ opacity: 1, x: 0 }}
-      viewport={{ once: true }}
-      transition={{ delay: index * 0.1 }}
-      className="p-6 rounded-2xl bg-card border border-border hover:border-brand-500/30 transition-colors"
-    >
+    <div className="p-6 rounded-2xl bg-card border border-border hover:border-brand-500/30 transition-colors">
       <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-500 to-cyan-500 flex items-center justify-center mb-4">
         <Icon className="h-5 w-5 text-white" />
       </div>
       <h3 className="font-semibold text-lg mb-2">{value.title}</h3>
       <p className="text-muted-foreground text-sm leading-relaxed">{value.description}</p>
-    </motion.div>
+    </div>
   );
 }
 
 // ─── Page ──────────────────────────────────────────────────────────────────
 
 export default function AboutPage() {
-  const { data } = useQuery(aboutQueryOptions);
+  const { data } = useAboutQuery();
+  const { t } = useTranslation();
 
   const page    = data?.page;
   const mission = data?.mission;
   const vision  = data?.vision;
-  const values  = data?.values?.length  ? data.values : FALLBACK_VALUES;
-  const team    = data?.team?.length    ? data.team   : FALLBACK_TEAM;
+  const rawValues = data?.values?.length ? data.values : FALLBACK_VALUES;
+  const team      = data?.team?.length   ? data.team   : FALLBACK_TEAM;
+
+  // Apply i18n to known English defaults; pass custom/translated DB values through as-is
+  const pageBadge = page?.badge_text && page.badge_text !== EN_PAGE_BADGE
+    ? page.badge_text : t("about.our_story");
+  const pageTitle = page?.hero_title && page.hero_title !== EN_PAGE_TITLE
+    ? page.hero_title : t("about.hero_title");
+  // Description: match by prefix because DB may have a longer version of the same text
+  const pageDesc = page?.hero_description && !page.hero_description.startsWith("Founded in 2018")
+    ? page.hero_description : t("about.hero_description");
+
+  const missionTitle = mission?.title && mission.title !== EN_MISSION_TITLE
+    ? mission.title : t("about.mission_title");
+  const missionDesc = mission?.description && !mission.description.startsWith("To build world-class")
+    ? mission.description : t("about.mission_desc");
+
+  const visionTitle = vision?.title && vision.title !== EN_VISION_TITLE
+    ? vision.title : t("about.vision_title");
+  const visionDesc = vision?.description && !vision.description.startsWith("To become the most trusted")
+    ? vision.description : t("about.vision_desc");
+
+  // Translate known fallback values; pass custom admin values through unchanged
+  const values = rawValues.map((v) => {
+    const keys = VALUE_I18N[v.title];
+    return keys ? { ...v, title: t(keys.titleKey), description: t(keys.descKey) } : v;
+  });
 
   return (
     <>
@@ -189,16 +224,13 @@ export default function AboutPage() {
               transition={{ duration: 0.6 }}
             >
               <span className="inline-block px-4 py-1.5 rounded-full bg-brand-500/10 text-brand-400 text-sm font-medium border border-brand-500/20 mb-6">
-                {page?.badge_text ?? "Our Story"}
+                {pageBadge}
               </span>
               <h1 className="text-5xl sm:text-6xl font-bold mb-6">
-                <span className="gradient-text">
-                  {page?.hero_title ?? "Engineering the Digital Future"}
-                </span>
+                <span className="gradient-text">{pageTitle}</span>
               </h1>
               <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-                {page?.hero_description ??
-                  "Founded in 2018, BlackMarlinBD started as a three-person team in Dhaka with a single mission: build world-class technology for global enterprises."}
+                {pageDesc}
               </p>
             </motion.div>
           </div>
@@ -208,9 +240,9 @@ export default function AboutPage() {
         <section className="py-16 border-y border-border bg-accent/20">
           <div className="container mx-auto px-4">
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
-              {STATS.map(({ icon: Icon, value, label }, i) => (
+              {STAT_KEYS.map(({ icon: Icon, value, key }, i) => (
                 <motion.div
-                  key={label}
+                  key={key}
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
@@ -221,7 +253,7 @@ export default function AboutPage() {
                     <Icon className="h-6 w-6 text-brand-400" />
                   </div>
                   <div className="text-3xl font-bold gradient-text mb-1">{value}</div>
-                  <div className="text-sm text-muted-foreground">{label}</div>
+                  <div className="text-sm text-muted-foreground">{t(key)}</div>
                 </motion.div>
               ))}
             </div>
@@ -243,13 +275,8 @@ export default function AboutPage() {
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-500 to-cyan-500 flex items-center justify-center mb-5">
                   <Target className="h-5 w-5 text-white" />
                 </div>
-                <h2 className="text-xl font-bold mb-3">
-                  {mission?.title ?? "Our Mission"}
-                </h2>
-                <p className="text-muted-foreground leading-relaxed">
-                  {mission?.description ??
-                    "To build world-class technology that empowers global enterprises to innovate faster, operate smarter, and compete on the world stage."}
-                </p>
+                <h2 className="text-xl font-bold mb-3">{missionTitle}</h2>
+                <p className="text-muted-foreground leading-relaxed">{missionDesc}</p>
               </motion.div>
 
               {/* Vision */}
@@ -263,13 +290,8 @@ export default function AboutPage() {
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center mb-5">
                   <Rocket className="h-5 w-5 text-white" />
                 </div>
-                <h2 className="text-xl font-bold mb-3">
-                  {vision?.title ?? "Our Vision"}
-                </h2>
-                <p className="text-muted-foreground leading-relaxed">
-                  {vision?.description ??
-                    "To become the most trusted engineering partner for the world's most ambitious organisations — from startups to Fortune 500 leaders."}
-                </p>
+                <h2 className="text-xl font-bold mb-3">{visionTitle}</h2>
+                <p className="text-muted-foreground leading-relaxed">{visionDesc}</p>
               </motion.div>
             </div>
           </div>
@@ -285,17 +307,24 @@ export default function AboutPage() {
               className="text-center mb-16"
             >
               <h2 className="text-4xl font-bold mb-4">
-                Our <span className="gradient-text">Core Values</span>
+                <span className="gradient-text">{t("about.values_heading")}</span>
               </h2>
               <p className="text-muted-foreground max-w-xl mx-auto">
-                These aren't just words on a wall — they're the principles that guide every
-                line of code we write.
+                {t("about.values_subtitle")}
               </p>
             </motion.div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
               {values.map((v, i) => (
-                <ValueCard key={v.id} value={v} index={i} />
+                <motion.div
+                  key={v.id}
+                  initial={{ opacity: 0, x: i % 2 === 0 ? -20 : 20 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.1 }}
+                >
+                  <ValueCard value={v} />
+                </motion.div>
               ))}
             </div>
           </div>
@@ -311,10 +340,10 @@ export default function AboutPage() {
               className="text-center mb-16"
             >
               <h2 className="text-4xl font-bold mb-4">
-                Leadership <span className="gradient-text">Team</span>
+                <span className="gradient-text">{t("about.team_heading")}</span>
               </h2>
               <p className="text-muted-foreground max-w-xl mx-auto">
-                The people behind the engineering.
+                {t("about.team_subtitle")}
               </p>
             </motion.div>
 
@@ -334,12 +363,12 @@ export default function AboutPage() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
             >
-              <h2 className="text-4xl font-bold mb-4">Want to join our team?</h2>
+              <h2 className="text-4xl font-bold mb-4">{t("about.cta_title")}</h2>
               <p className="text-muted-foreground mb-8 max-w-md mx-auto">
-                We're always looking for exceptional engineers who love building things that matter.
+                {t("about.cta_subtitle")}
               </p>
               <Link to="/careers">
-                <Button variant="gradient" size="lg">View Open Positions</Button>
+                <Button variant="gradient" size="lg">{t("about.view_positions")}</Button>
               </Link>
             </motion.div>
           </div>

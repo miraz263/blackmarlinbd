@@ -135,7 +135,7 @@ function ActionModal({
 function HistoryPanel({ reviewId, onClose }: { reviewId: number; onClose: () => void }) {
   const { data: history = [] } = useQuery({
     queryKey: workflowKeys.history(reviewId),
-    queryFn: () => workflowService.getHistory(reviewId).then((r) => r.data),
+    queryFn: () => workflowService.getHistory(reviewId).then((r) => r.data.results),
     staleTime: 30_000,
   });
 
@@ -337,21 +337,21 @@ export default function WorkflowPage() {
 
   const { data: queue = [], isLoading: queueLoading } = useQuery({
     queryKey: workflowKeys.queue,
-    queryFn: () => workflowService.getQueue().then((r) => r.data),
+    queryFn: () => workflowService.getQueue().then((r) => r.data.results),
     staleTime: 30_000,
     enabled: tab === "queue",
   });
 
   const { data: submissions = [], isLoading: subLoading } = useQuery({
     queryKey: workflowKeys.submissions,
-    queryFn: () => workflowService.getSubmissions().then((r) => r.data),
+    queryFn: () => workflowService.getSubmissions().then((r) => r.data.results),
     staleTime: 30_000,
     enabled: tab === "submissions",
   });
 
   const { data: allItems = [], isLoading: allLoading } = useQuery({
     queryKey: workflowKeys.all({ status: statusFilter }),
-    queryFn: () => workflowService.getAll({ status: statusFilter || undefined }).then((r) => r.data),
+    queryFn: () => workflowService.getAll({ status: statusFilter || undefined }).then((r) => r.data.results),
     staleTime: 30_000,
     enabled: tab === "all",
   });

@@ -5,17 +5,19 @@ import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { Clock, Eye, ArrowRight, Search } from "lucide-react";
 import { blogApi } from "@/services/api/blog";
+import { useTranslation } from "@/hooks/useTranslation";
 import { formatDate } from "@/lib/utils";
 import type { BlogPost } from "@/types";
 
 export default function BlogPage() {
+  const { t } = useTranslation();
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [page, setPage] = useState(1);
 
   const { data: categories } = useQuery({
     queryKey: ["blog-categories"],
-    queryFn: () => blogApi.categories.list().then((r) => r.data),
+    queryFn: () => blogApi.categories.list().then((r) => r.data.results),
   });
 
   const { data, isLoading } = useQuery({
@@ -50,10 +52,10 @@ export default function BlogPage() {
             className="text-center mb-12"
           >
             <h1 className="text-5xl font-bold mb-4">
-              Engineering <span className="gradient-text">Insights</span>
+              <span className="gradient-text">{t("blog.page_title")}</span>
             </h1>
             <p className="text-muted-foreground max-w-xl mx-auto">
-              Deep dives, tutorials, and perspectives from our team of engineers and architects.
+              {t("blog.page_subtitle")}
             </p>
           </motion.div>
 
@@ -63,7 +65,7 @@ export default function BlogPage() {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <input
                 type="text"
-                placeholder="Search articles..."
+                placeholder={t("blog.search_placeholder")}
                 value={search}
                 onChange={(e) => { setSearch(e.target.value); setPage(1); }}
                 className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-card border border-border text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
@@ -74,7 +76,7 @@ export default function BlogPage() {
                 onClick={() => setSelectedCategory("all")}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${selectedCategory === "all" ? "bg-brand-500 text-white" : "bg-card border border-border text-muted-foreground hover:text-foreground"}`}
               >
-                All
+                {t("common.all")}
               </button>
               {categories?.map((cat) => (
                 <button
@@ -131,7 +133,7 @@ export default function BlogPage() {
                     <div className="flex items-center gap-3 text-xs text-muted-foreground mb-3">
                       <span className="flex items-center gap-1">
                         <Clock className="h-3 w-3" />
-                        {post.read_time} min read
+                        {post.read_time} {t("blog.min_read")}
                       </span>
                       <span className="flex items-center gap-1">
                         <Eye className="h-3 w-3" />
@@ -157,7 +159,7 @@ export default function BlogPage() {
                         to={`/blog/${post.slug}`}
                         className="inline-flex items-center gap-1 text-xs text-brand-400 hover:text-brand-300 font-medium"
                       >
-                        Read <ArrowRight className="h-3 w-3" />
+                        {t("blog.read")} <ArrowRight className="h-3 w-3" />
                       </Link>
                     </div>
                   </div>
@@ -171,12 +173,12 @@ export default function BlogPage() {
             <div className="flex items-center justify-center gap-2 mt-12">
               <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1}
                 className="px-4 py-2 rounded-lg border border-border disabled:opacity-40 hover:bg-accent transition-colors text-sm">
-                Previous
+                {t("projects.previous")}
               </button>
-              <span className="text-sm text-muted-foreground">Page {page} of {data.total_pages}</span>
+              <span className="text-sm text-muted-foreground">{page} / {data.total_pages}</span>
               <button onClick={() => setPage((p) => Math.min(data.total_pages, p + 1))} disabled={page === data.total_pages}
                 className="px-4 py-2 rounded-lg border border-border disabled:opacity-40 hover:bg-accent transition-colors text-sm">
-                Next
+                {t("btn.next")}
               </button>
             </div>
           )}

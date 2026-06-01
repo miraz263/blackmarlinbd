@@ -2,6 +2,7 @@ import { apiClient } from "./api/client";
 import type {
   ApprovalWorkflow,
   ContentReview,
+  PaginatedResponse,
   WorkflowNotification,
   WorkflowStats,
   WorkflowTransition,
@@ -23,14 +24,14 @@ export const workflowKeys = {
 
 export const workflowService = {
   // Queue views
-  getQueue:       () => apiClient.get<ContentReview[]>("/workflow/queue/"),
-  getSubmissions: () => apiClient.get<ContentReview[]>("/workflow/submissions/"),
+  getQueue:       () => apiClient.get<PaginatedResponse<ContentReview>>("/workflow/queue/"),
+  getSubmissions: () => apiClient.get<PaginatedResponse<ContentReview>>("/workflow/submissions/"),
   getAll: (params?: { status?: string; app?: string }) =>
-    apiClient.get<ContentReview[]>("/workflow/all/", { params }),
+    apiClient.get<PaginatedResponse<ContentReview>>("/workflow/all/", { params }),
 
   // Review detail
   getReview:  (id: number) => apiClient.get<ContentReview>(`/workflow/reviews/${id}/`),
-  getHistory: (id: number) => apiClient.get<WorkflowTransition[]>(`/workflow/reviews/${id}/history/`),
+  getHistory: (id: number) => apiClient.get<PaginatedResponse<WorkflowTransition>>(`/workflow/reviews/${id}/history/`),
 
   // Per-object status lookup
   getContentStatus: (appLabel: string, modelName: string, objectId: number) =>
@@ -55,7 +56,7 @@ export const workflowService = {
     apiClient.post<ContentReview>(`/workflow/reviews/${id}/restore/`, { comment }),
 
   // Notifications
-  getNotifications: () => apiClient.get<WorkflowNotification[]>("/workflow/notifications/"),
+  getNotifications: () => apiClient.get<PaginatedResponse<WorkflowNotification>>("/workflow/notifications/"),
   getUnreadCount:   () => apiClient.get<{ count: number }>("/workflow/notifications/unread/"),
   markRead:         (id: number) => apiClient.post(`/workflow/notifications/${id}/read/`, {}),
   markAllRead:      () => apiClient.post("/workflow/notifications/read-all/", {}),

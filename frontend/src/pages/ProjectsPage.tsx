@@ -5,17 +5,19 @@ import { useQuery } from "@tanstack/react-query";
 import { Search, ExternalLink, Github, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { projectsApi } from "@/services/api/projects";
+import { useTranslation } from "@/hooks/useTranslation";
 import type { Project } from "@/types";
 import { cn } from "@/lib/utils";
 
 export default function ProjectsPage() {
+  const { t } = useTranslation();
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
 
   const { data: categories } = useQuery({
     queryKey: ["project-categories"],
-    queryFn: () => projectsApi.categories.list().then((r) => r.data),
+    queryFn: () => projectsApi.categories.list().then((r) => r.data.results),
     staleTime: 5 * 60 * 1000,
   });
 
@@ -51,14 +53,13 @@ export default function ProjectsPage() {
             className="text-center mb-12"
           >
             <span className="inline-block px-4 py-1.5 rounded-full bg-brand-500/10 text-brand-400 text-sm font-medium border border-brand-500/20 mb-4">
-              Portfolio
+              {t("projects.portfolio")}
             </span>
             <h1 className="text-5xl font-bold mb-4">
-              Our <span className="gradient-text">Projects</span>
+              <span className="gradient-text">{t("projects.page_title")}</span>
             </h1>
             <p className="text-muted-foreground max-w-2xl mx-auto">
-              From AI-powered trading platforms to real-time analytics dashboards — explore our
-              most impactful engineering work.
+              {t("projects.page_subtitle")}
             </p>
           </motion.div>
 
@@ -69,7 +70,7 @@ export default function ProjectsPage() {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <input
                 type="text"
-                placeholder="Search projects..."
+                placeholder={t("projects.search_placeholder")}
                 value={search}
                 onChange={(e) => { setSearch(e.target.value); setPage(1); }}
                 className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-card border border-border text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
@@ -87,7 +88,7 @@ export default function ProjectsPage() {
                     : "bg-card border border-border text-muted-foreground hover:text-foreground"
                 )}
               >
-                All
+                {t("common.all")}
               </button>
               {categories?.map((cat) => (
                 <button
@@ -154,7 +155,7 @@ export default function ProjectsPage() {
                         ))}
                       </div>
                       <Link to={`/projects/${project.slug}`} className="inline-flex items-center gap-1 text-sm text-brand-400 hover:text-brand-300 font-medium">
-                        View details <ArrowRight className="h-3.5 w-3.5" />
+                        {t("projects.view_details")} <ArrowRight className="h-3.5 w-3.5" />
                       </Link>
                     </div>
                   </motion.div>
@@ -169,17 +170,17 @@ export default function ProjectsPage() {
                     disabled={page === 1}
                     className="px-4 py-2 rounded-lg border border-border disabled:opacity-40 hover:bg-accent transition-colors text-sm"
                   >
-                    Previous
+                    {t("projects.previous")}
                   </button>
                   <span className="text-sm text-muted-foreground">
-                    Page {page} of {projects.total_pages}
+                    {page} / {projects.total_pages}
                   </span>
                   <button
                     onClick={() => setPage((p) => Math.min(projects.total_pages, p + 1))}
                     disabled={page === projects.total_pages}
                     className="px-4 py-2 rounded-lg border border-border disabled:opacity-40 hover:bg-accent transition-colors text-sm"
                   >
-                    Next
+                    {t("btn.next")}
                   </button>
                 </div>
               )}

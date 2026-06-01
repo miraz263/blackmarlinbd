@@ -1,9 +1,8 @@
 import { motion } from "framer-motion";
-import { useQuery } from "@tanstack/react-query";
-import { homepageQueryOptions } from "@/services/homepageService";
+import { useHomepageQuery } from "@/hooks/useHomepageQuery";
 
 export function Partners() {
-  const { data } = useQuery(homepageQueryOptions);
+  const { data } = useHomepageQuery();
 
   const section = data?.sections?.partners;
   const partners = data?.partners ?? [];

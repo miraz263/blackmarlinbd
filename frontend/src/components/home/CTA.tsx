@@ -1,23 +1,26 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { ArrowRight, Calendar } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { homepageQueryOptions } from "@/services/homepageService";
+import { useTranslation } from "@/hooks/useTranslation";
+import { useHomepageQuery } from "@/hooks/useHomepageQuery";
 
 export function CTA() {
-  const { data } = useQuery(homepageQueryOptions);
+  const { data } = useHomepageQuery();
+  const { t } = useTranslation();
 
   const section = data?.sections?.cta;
 
   if (section && !section.is_visible) return null;
 
-  const title = section?.title ?? "Ready to Build Something Extraordinary?";
-  const description =
-    section?.description ??
-    "Join 50+ global enterprises that trust BlackMarlinBD to engineer their most critical technology infrastructure.";
-  const ctaText = section?.cta_text ?? "Start Your Project";
-  const ctaLink = section?.cta_link ?? "/contact";
+  const EN_TITLE = "Ready to Build Something Extraordinary?";
+  const EN_DESC  = "Join 50+ global enterprises that trust BlackMarlinBD to engineer their most critical technology infrastructure.";
+  const EN_TEXT  = "Start Your Project";
+
+  const title       = section?.title       && section.title       !== EN_TITLE ? section.title       : t("cta.title");
+  const description = section?.description && section.description !== EN_DESC  ? section.description : t("cta.description");
+  const ctaText     = section?.cta_text    && section.cta_text    !== EN_TEXT  ? section.cta_text    : t("cta.primary_text");
+  const ctaLink     = section?.cta_link ?? "/contact";
 
   return (
     <section className="py-24 relative overflow-hidden">
@@ -67,7 +70,7 @@ export function CTA() {
             </Link>
             <button className="inline-flex items-center gap-2 px-8 py-4 rounded-xl text-white border-2 border-white/30 hover:border-white/60 hover:bg-white/10 transition-all duration-200 text-base font-semibold">
               <Calendar className="h-5 w-5" />
-              Schedule a Call
+              {t("cta.schedule_call")}
             </button>
           </div>
         </motion.div>

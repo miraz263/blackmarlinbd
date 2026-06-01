@@ -5,7 +5,7 @@ export const projectsApi = {
   list: (params?: Record<string, string | number | boolean>) =>
     apiClient.get<PaginatedResponse<Project>>("/projects/", { params }),
 
-  featured: () => apiClient.get<Project[]>("/projects/featured/"),
+  featured: () => apiClient.get<PaginatedResponse<Project>>("/projects/featured/"),
 
   get: (slug: string) => apiClient.get<Project>(`/projects/${slug}/`),
 
@@ -20,7 +20,7 @@ export const projectsApi = {
   delete: (slug: string) => apiClient.delete(`/projects/${slug}/`),
 
   categories: {
-    list: () => apiClient.get<Category[]>("/projects/categories/"),
+    list: () => apiClient.get<PaginatedResponse<Category>>("/projects/categories/"),
     create: (data: Partial<Category>) =>
       apiClient.post<Category>("/projects/categories/", data),
   },

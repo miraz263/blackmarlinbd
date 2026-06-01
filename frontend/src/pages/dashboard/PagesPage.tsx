@@ -154,7 +154,7 @@ export default function PagesPage() {
 
   const { data: pages = [], isLoading } = useQuery({
     queryKey: pbKeys.list(),
-    queryFn:  () => pageBuilderService.listPages().then((r) => r.data),
+    queryFn:  () => pageBuilderService.listPages().then((r) => r.data.results),
     staleTime: 60 * 1000,
   });
 

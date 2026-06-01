@@ -1,6 +1,5 @@
 import { motion } from "framer-motion";
-import { useQuery } from "@tanstack/react-query";
-import { homepageQueryOptions } from "@/services/homepageService";
+import { useHomepageQuery } from "@/hooks/useHomepageQuery";
 import type { TechItem } from "@/types";
 
 const FALLBACK_TECHNOLOGIES: TechItem[] = [
@@ -23,7 +22,7 @@ const FALLBACK_TECHNOLOGIES: TechItem[] = [
 ];
 
 export function TechStack() {
-  const { data } = useQuery(homepageQueryOptions);
+  const { data } = useHomepageQuery();
 
   const section = data?.sections?.tech_stack;
   const items = data?.tech_items?.length ? data.tech_items : FALLBACK_TECHNOLOGIES;

@@ -5,6 +5,7 @@ import type {
   ServiceCategory,
   ServiceTechnology,
   ServiceParams,
+  PaginatedResponse,
 } from "@/types";
 
 export const servicesKeys = {
@@ -18,16 +19,16 @@ export const servicesKeys = {
 export const servicesService = {
   // ── Public reads ───────────────────────────────────────────────────────
   getAll: (params?: ServiceParams) =>
-    apiClient.get<ServiceListItem[]>("/services/", { params }),
+    apiClient.get<PaginatedResponse<ServiceListItem>>("/services/", { params }),
 
   getBySlug: (slug: string) =>
     apiClient.get<ServiceDetail>(`/services/${slug}/`),
 
   getCategories: () =>
-    apiClient.get<ServiceCategory[]>("/services/categories/"),
+    apiClient.get<PaginatedResponse<ServiceCategory>>("/services/categories/"),
 
   getTechnologies: () =>
-    apiClient.get<ServiceTechnology[]>("/services/technologies/"),
+    apiClient.get<PaginatedResponse<ServiceTechnology>>("/services/technologies/"),
 
   // ── Admin writes ────────────────────────────────────────────────────────
   create: (data: FormData) =>

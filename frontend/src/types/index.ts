@@ -526,10 +526,11 @@ export interface MediaUploadParams {
 }
 
 export interface MediaListParams {
-  type?: MediaAssetType;
-  folder?: string;
-  search?: string;
-  page?: number;
+  type?:      MediaAssetType;
+  folder?:    string;
+  search?:    string;
+  page?:      number;
+  page_size?: number;
 }
 
 // ─── Workflow ──────────────────────────────────────────────────────────────

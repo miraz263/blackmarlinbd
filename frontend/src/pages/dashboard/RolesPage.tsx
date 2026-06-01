@@ -372,13 +372,13 @@ export default function RolesPage() {
 
   const { data: roles = [], isLoading } = useQuery({
     queryKey: rbacKeys.roles,
-    queryFn:  () => rbacService.getRoles().then((r) => r.data),
+    queryFn:  () => rbacService.getRoles().then((r) => r.data.results),
     staleTime: 2 * 60 * 1000,
   });
 
   const { data: allPermissions = [] } = useQuery({
     queryKey: rbacKeys.permissions,
-    queryFn:  () => rbacService.getPermissions().then((r) => r.data),
+    queryFn:  () => rbacService.getPermissions().then((r) => r.data.results),
     staleTime: 10 * 60 * 1000,
   });
 

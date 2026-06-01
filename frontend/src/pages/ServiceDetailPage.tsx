@@ -5,6 +5,9 @@ import { useQuery } from "@tanstack/react-query";
 import {
   ArrowLeft, ArrowRight, Check, Eye,
   Brain, BarChart3, Cloud, Globe, ShieldCheck, Zap, Server, Code, Database, Lock,
+  Landmark, TrendingUp, ShoppingCart, Radio, GraduationCap, Heart, Cpu, Shield,
+  Microscope, Factory, Building2, ShoppingBag, Plane, Layers, Package, FlaskConical,
+  HeartHandshake,
   type LucideIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -14,6 +17,9 @@ import { servicesService, servicesKeys } from "@/services/serviceService";
 
 const ICON_MAP: Record<string, LucideIcon> = {
   Brain, BarChart3, Cloud, Globe, ShieldCheck, Zap, Server, Code, Database, Lock,
+  Landmark, TrendingUp, ShoppingCart, Radio, GraduationCap, Heart, Cpu, Shield,
+  Microscope, Factory, Building2, ShoppingBag, Plane, Layers, Package, FlaskConical,
+  HeartHandshake,
 };
 
 const GRADIENT_MAP: Record<string, { hero: string; icon: string; border: string }> = {

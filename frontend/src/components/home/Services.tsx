@@ -1,12 +1,12 @@
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
 import { Link } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
 import {
   Brain, BarChart3, Cloud, Globe, ShieldCheck, Zap, Server, Code, Database, Lock,
   ArrowRight, type LucideIcon,
 } from "lucide-react";
-import { homepageQueryOptions } from "@/services/homepageService";
+import { useTranslation } from "@/hooks/useTranslation";
+import { useHomepageQuery } from "@/hooks/useHomepageQuery";
 import type { ServiceItem } from "@/types";
 
 const ICON_MAP: Record<string, LucideIcon> = {
@@ -56,6 +56,21 @@ const FALLBACK_SERVICES: ServiceItem[] = [
   },
 ];
 
+// Known English section header defaults — prefer i18n when DB hasn't been translated
+const EN_SECTION_BADGE = "What We Do";
+const EN_SECTION_TITLE = "End-to-End Technology Services";
+const EN_SECTION_DESC =
+  "From AI research to production deployment, we engineer solutions that solve real business problems at enterprise scale.";
+
+// Maps known English service titles to i18n keys for title + description
+const SERVICE_I18N: Record<string, { titleKey: string; descKey: string }> = {
+  "AI & Machine Learning": { titleKey: "services.s_ai_title",    descKey: "services.s_ai_desc" },
+  "Financial Systems":     { titleKey: "services.s_fin_title",   descKey: "services.s_fin_desc" },
+  "Cloud & DevOps":        { titleKey: "services.s_cloud_title", descKey: "services.s_cloud_desc" },
+  "Web & Mobile Apps":     { titleKey: "services.s_web_title",   descKey: "services.s_web_desc" },
+  "Cybersecurity":         { titleKey: "services.s_cyber_title", descKey: "services.s_cyber_desc" },
+};
+
 const containerVariants = {
   hidden: {},
   visible: { transition: { staggerChildren: 0.1 } },
@@ -69,12 +84,25 @@ const cardVariants = {
 export function Services() {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
-  const { data } = useQuery(homepageQueryOptions);
+  const { data } = useHomepageQuery();
+  const { t } = useTranslation();
 
   const section = data?.sections?.services;
   const services = data?.services?.length ? data.services : FALLBACK_SERVICES;
 
   if (section && !section.is_visible) return null;
+
+  // Use comparison pattern: if DB returns the unchanged English default, show i18n translation
+  const sectionBadge =
+    section?.badge_text && section.badge_text !== EN_SECTION_BADGE
+      ? section.badge_text
+      : t("services.badge");
+  const sectionTitleIsDefault =
+    !section?.title || section.title === EN_SECTION_TITLE;
+  const sectionDesc =
+    section?.description && section.description !== EN_SECTION_DESC
+      ? section.description
+      : t("services.subtitle");
 
   return (
     <section className="py-24 relative" id="services">
@@ -91,18 +119,17 @@ export function Services() {
           className="text-center mb-16"
         >
           <span className="inline-block px-4 py-1.5 rounded-full bg-brand-500/10 text-brand-400 text-sm font-medium border border-brand-500/20 mb-4">
-            {section?.badge_text ?? "What We Do"}
+            {sectionBadge}
           </span>
           <h2 className="text-4xl sm:text-5xl font-bold text-foreground mb-4">
-            {section?.title ?? (
-              <>
-                End-to-End <span className="gradient-text">Technology Services</span>
-              </>
+            {sectionTitleIsDefault ? (
+              <span className="gradient-text">{t("services.section_title")}</span>
+            ) : (
+              section!.title
             )}
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            {section?.description ??
-              "From AI research to production deployment, we engineer solutions that solve real business problems at enterprise scale."}
+            {sectionDesc}
           </p>
         </motion.div>
 
@@ -118,6 +145,12 @@ export function Services() {
             const Icon = ICON_MAP[service.icon_name] ?? Zap;
             const { gradient, shadow } =
               GRADIENT_MAP[service.gradient] ?? GRADIENT_MAP["purple-brand"];
+
+            // Translate known service titles/descriptions; pass through custom DB content as-is
+            const i18nKeys = SERVICE_I18N[service.title];
+            const displayTitle = i18nKeys ? t(i18nKeys.titleKey) : service.title;
+            const displayDesc  = i18nKeys ? t(i18nKeys.descKey)  : service.description;
+
             return (
               <motion.div
                 key={service.id}
@@ -134,10 +167,10 @@ export function Services() {
                 </div>
 
                 <h3 className="relative font-semibold text-lg text-foreground mb-2">
-                  {service.title}
+                  {displayTitle}
                 </h3>
                 <p className="relative text-sm text-muted-foreground leading-relaxed mb-4">
-                  {service.description}
+                  {displayDesc}
                 </p>
 
                 <div className="relative flex flex-wrap gap-1.5 mb-4">
@@ -155,7 +188,7 @@ export function Services() {
                   to={service.href}
                   className="relative inline-flex items-center gap-1 text-sm font-medium text-brand-400 hover:text-brand-300 transition-colors group/link"
                 >
-                  Learn more
+                  {t("services.learn_more")}
                   <ArrowRight className="h-3.5 w-3.5 group-hover/link:translate-x-1 transition-transform" />
                 </Link>
               </motion.div>
@@ -169,13 +202,13 @@ export function Services() {
           >
             <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PGNpcmNsZSBjeD0iMzAiIGN5PSIzMCIgcj0iMzAiLz48L2c+PC9nPjwvc3ZnPg==')] opacity-50" />
             <div className="relative">
-              <h3 className="font-bold text-xl mb-2">Need a custom solution?</h3>
+              <h3 className="font-bold text-xl mb-2">{t("services.custom_title")}</h3>
               <p className="text-white/80 text-sm mb-6">
-                Our architects will design a bespoke system tailored to your exact requirements.
+                {t("services.custom_desc")}
               </p>
               <Link to="/contact">
                 <button className="px-4 py-2 rounded-lg bg-white text-brand-600 font-semibold text-sm hover:bg-white/90 transition-colors inline-flex items-center gap-2">
-                  Talk to an Expert
+                  {t("services.talk_expert")}
                   <ArrowRight className="h-4 w-4" />
                 </button>
               </Link>

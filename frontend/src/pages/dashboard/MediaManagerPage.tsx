@@ -324,6 +324,7 @@ export default function MediaManagerPage() {
     ...(activeType !== "all"               && { type: activeType }),
     ...(activeFolder !== undefined         && { folder: activeFolder }),
     page,
+    page_size: PAGE_SIZE,
   };
 
   const { data, isLoading } = useQuery({

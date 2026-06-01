@@ -5,26 +5,28 @@ import { useQuery } from "@tanstack/react-query";
 import { MapPin, Clock, Briefcase, ChevronDown, ChevronUp } from "lucide-react";
 import { jobsApi } from "@/services/api/jobs";
 import { Button } from "@/components/ui/button";
+import { useTranslation } from "@/hooks/useTranslation";
 import type { Job } from "@/types";
 import { cn } from "@/lib/utils";
 import { formatDate } from "@/lib/utils";
 
-const typeLabels: Record<string, string> = {
-  full_time: "Full Time",
-  part_time: "Part Time",
-  contract: "Contract",
-  internship: "Internship",
-  remote: "Remote",
+const TYPE_KEYS: Record<string, string> = {
+  full_time: "careers.type_full_time",
+  part_time: "careers.type_part_time",
+  contract:  "careers.type_contract",
+  internship:"careers.type_internship",
+  remote:    "careers.type_remote",
 };
 
-const expLabels: Record<string, string> = {
-  junior: "Junior (0–2 yrs)",
-  mid: "Mid (3–5 yrs)",
-  senior: "Senior (5+ yrs)",
-  lead: "Lead / Principal",
+const EXP_KEYS: Record<string, string> = {
+  junior: "careers.exp_junior",
+  mid:    "careers.exp_mid",
+  senior: "careers.exp_senior",
+  lead:   "careers.exp_lead",
 };
 
 function JobCard({ job }: { job: Job }) {
+  const { t } = useTranslation();
   const [expanded, setExpanded] = useState(false);
 
   return (
@@ -44,7 +46,7 @@ function JobCard({ job }: { job: Job }) {
               </span>
             )}
             <span className="px-2 py-0.5 rounded-full bg-green-500/20 text-green-400 text-xs font-medium">
-              {job.status === "open" ? "Now Hiring" : "Closed"}
+              {job.status === "open" ? t("careers.now_hiring") : t("careers.closed")}
             </span>
           </div>
           <h3 className="font-semibold text-lg mb-1">{job.title}</h3>
@@ -59,9 +61,9 @@ function JobCard({ job }: { job: Job }) {
             </span>
             <span className="flex items-center gap-1">
               <Clock className="h-3.5 w-3.5" />
-              {typeLabels[job.type]}
+              {t(TYPE_KEYS[job.type] ?? "careers.type_full_time")}
             </span>
-            <span>{expLabels[job.experience]}</span>
+            <span>{t(EXP_KEYS[job.experience] ?? "careers.exp_junior")}</span>
             {job.salary_min && job.salary_max && (
               <span className="font-medium text-foreground">
                 {job.salary_currency} {job.salary_min.toLocaleString()} – {job.salary_max.toLocaleString()}
@@ -80,16 +82,16 @@ function JobCard({ job }: { job: Job }) {
         >
           <div className="pt-4 space-y-4">
             <div>
-              <h4 className="font-medium mb-2">About the Role</h4>
+              <h4 className="font-medium mb-2">{t("careers.about_role")}</h4>
               <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line">{job.description}</p>
             </div>
             <div>
-              <h4 className="font-medium mb-2">Requirements</h4>
+              <h4 className="font-medium mb-2">{t("careers.requirements")}</h4>
               <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line">{job.requirements}</p>
             </div>
             {job.skills.length > 0 && (
               <div>
-                <h4 className="font-medium mb-2">Skills</h4>
+                <h4 className="font-medium mb-2">{t("careers.skills")}</h4>
                 <div className="flex flex-wrap gap-2">
                   {job.skills.map((s) => (
                     <span key={s} className="px-2 py-1 rounded-lg bg-accent text-accent-foreground text-xs font-medium">{s}</span>
@@ -98,11 +100,11 @@ function JobCard({ job }: { job: Job }) {
               </div>
             )}
             {job.deadline && (
-              <p className="text-xs text-muted-foreground">Apply by: {formatDate(job.deadline)}</p>
+              <p className="text-xs text-muted-foreground">{t("careers.apply_by")} {formatDate(job.deadline)}</p>
             )}
             <div className="pt-2">
               <Button variant="gradient" size="sm" onClick={() => window.location.href = `/careers/${job.id}/apply`}>
-                Apply Now
+                {t("careers.apply_now")}
               </Button>
             </div>
           </div>
@@ -113,6 +115,7 @@ function JobCard({ job }: { job: Job }) {
 }
 
 export default function CareersPage() {
+  const { t } = useTranslation();
   const [typeFilter, setTypeFilter] = useState("all");
 
   const { data, isLoading } = useQuery({
@@ -124,12 +127,12 @@ export default function CareersPage() {
   });
 
   const perks = [
-    { emoji: "🏥", title: "Full Health Coverage", desc: "Medical, dental, and vision for you and your family." },
-    { emoji: "🌍", title: "Remote-First Culture", desc: "Work from anywhere in the world." },
-    { emoji: "📚", title: "$3k Learning Budget", desc: "Annual budget for courses, books, and conferences." },
-    { emoji: "🏖️", title: "Unlimited PTO", desc: "We trust you to manage your time." },
-    { emoji: "💰", title: "Equity Participation", desc: "Share in the company's success." },
-    { emoji: "⚡", title: "Top-Tier Equipment", desc: "MacBook Pro, 4K monitors, and peripherals." },
+    { emoji: "🏥", titleKey: "careers.perk_health_title",    descKey: "careers.perk_health_desc" },
+    { emoji: "🌍", titleKey: "careers.perk_remote_title",    descKey: "careers.perk_remote_desc" },
+    { emoji: "📚", titleKey: "careers.perk_learning_title",  descKey: "careers.perk_learning_desc" },
+    { emoji: "🏖️", titleKey: "careers.perk_pto_title",       descKey: "careers.perk_pto_desc" },
+    { emoji: "💰", titleKey: "careers.perk_equity_title",    descKey: "careers.perk_equity_desc" },
+    { emoji: "⚡", titleKey: "careers.perk_equipment_title", descKey: "careers.perk_equipment_desc" },
   ];
 
   return (
@@ -151,11 +154,10 @@ export default function CareersPage() {
             className="text-center mb-16"
           >
             <h1 className="text-5xl font-bold mb-4">
-              Join Our <span className="gradient-text">Mission</span>
+              <span className="gradient-text">{t("careers.page_title")}</span>
             </h1>
             <p className="text-muted-foreground max-w-2xl mx-auto text-lg">
-              We're building one of the world's premier engineering teams. Come solve hard
-              problems with brilliant people.
+              {t("careers.page_subtitle")}
             </p>
           </motion.div>
 
@@ -163,7 +165,7 @@ export default function CareersPage() {
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-16">
             {perks.map((perk, i) => (
               <motion.div
-                key={perk.title}
+                key={perk.titleKey}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
@@ -171,26 +173,26 @@ export default function CareersPage() {
                 className="p-4 rounded-xl bg-card border border-border"
               >
                 <div className="text-2xl mb-2">{perk.emoji}</div>
-                <div className="font-medium text-sm mb-1">{perk.title}</div>
-                <div className="text-xs text-muted-foreground">{perk.desc}</div>
+                <div className="font-medium text-sm mb-1">{t(perk.titleKey)}</div>
+                <div className="text-xs text-muted-foreground">{t(perk.descKey)}</div>
               </motion.div>
             ))}
           </div>
 
           {/* Filters */}
           <div className="flex gap-2 mb-6 flex-wrap">
-            {["all", "full_time", "part_time", "contract", "remote", "internship"].map((t) => (
+            {["all", "full_time", "part_time", "contract", "remote", "internship"].map((typeKey) => (
               <button
-                key={t}
-                onClick={() => setTypeFilter(t)}
+                key={typeKey}
+                onClick={() => setTypeFilter(typeKey)}
                 className={cn(
-                  "px-4 py-2 rounded-lg text-sm font-medium transition-colors capitalize",
-                  typeFilter === t
+                  "px-4 py-2 rounded-lg text-sm font-medium transition-colors",
+                  typeFilter === typeKey
                     ? "bg-brand-500 text-white"
                     : "bg-card border border-border text-muted-foreground hover:text-foreground"
                 )}
               >
-                {t === "all" ? "All Positions" : typeLabels[t]}
+                {typeKey === "all" ? t("careers.all_positions") : t(TYPE_KEYS[typeKey] ?? "careers.type_full_time")}
               </button>
             ))}
           </div>
@@ -206,7 +208,7 @@ export default function CareersPage() {
                 ))}
             {!isLoading && data?.results.length === 0 && (
               <div className="text-center py-16 text-muted-foreground">
-                No open positions in this category right now. Check back soon!
+                {t("careers.no_positions")}
               </div>
             )}
           </div>

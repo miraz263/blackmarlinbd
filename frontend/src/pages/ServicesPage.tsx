@@ -6,15 +6,22 @@ import { useQuery } from "@tanstack/react-query";
 import {
   Search, ArrowRight, X,
   Brain, BarChart3, Cloud, Globe, ShieldCheck, Zap, Server, Code, Database, Lock,
+  Landmark, TrendingUp, ShoppingCart, Radio, GraduationCap, Heart, Cpu, Shield,
+  Microscope, Factory, Building2, ShoppingBag, Plane, Layers, Package, FlaskConical,
+  HeartHandshake,
   type LucideIcon,
 } from "lucide-react";
 import { servicesService, servicesKeys } from "@/services/serviceService";
+import { useTranslation } from "@/hooks/useTranslation";
 import type { ServiceListItem, ServiceParams } from "@/types";
 
 // ─── Maps ──────────────────────────────────────────────────────────────────
 
 const ICON_MAP: Record<string, LucideIcon> = {
   Brain, BarChart3, Cloud, Globe, ShieldCheck, Zap, Server, Code, Database, Lock,
+  Landmark, TrendingUp, ShoppingCart, Radio, GraduationCap, Heart, Cpu, Shield,
+  Microscope, Factory, Building2, ShoppingBag, Plane, Layers, Package, FlaskConical,
+  HeartHandshake,
 };
 
 const GRADIENT_MAP: Record<string, { card: string; icon: string }> = {
@@ -70,7 +77,7 @@ const FALLBACK_SERVICES: ServiceListItem[] = [
 
 // ─── Service Card ──────────────────────────────────────────────────────────
 
-function ServiceCard({ service, index }: { service: ServiceListItem; index: number }) {
+function ServiceCard({ service, index, exploreLabel, featuredLabel }: { service: ServiceListItem; index: number; exploreLabel: string; featuredLabel: string }) {
   const Icon = ICON_MAP[service.icon_name] ?? Zap;
   const g    = GRADIENT_MAP[service.gradient] ?? GRADIENT_MAP["purple-brand"];
 
@@ -115,7 +122,7 @@ function ServiceCard({ service, index }: { service: ServiceListItem; index: numb
         {/* Featured badge */}
         {service.featured && !service.category && (
           <span className="inline-block self-start px-2.5 py-0.5 rounded-full text-xs font-medium bg-brand-500/10 text-brand-400 mb-3">
-            Featured
+            {featuredLabel}
           </span>
         )}
 
@@ -153,7 +160,7 @@ function ServiceCard({ service, index }: { service: ServiceListItem; index: numb
           to={`/services/${service.slug}`}
           className="mt-5 inline-flex items-center gap-1.5 text-sm font-medium text-brand-400 hover:text-brand-300 transition-colors group/link"
         >
-          Explore service
+          {exploreLabel}
           <ArrowRight className="h-3.5 w-3.5 group-hover/link:translate-x-1 transition-transform" />
         </Link>
       </div>
@@ -164,6 +171,7 @@ function ServiceCard({ service, index }: { service: ServiceListItem; index: numb
 // ─── Page ──────────────────────────────────────────────────────────────────
 
 export default function ServicesPage() {
+  const { t } = useTranslation();
   const [search,      setSearch]      = useState("");
   const [activeCategory, setCategory] = useState<string>("all");
   const [featuredOnly, setFeatured]   = useState(false);
@@ -179,14 +187,14 @@ export default function ServicesPage() {
 
   const { data: services, isLoading: servicesLoading } = useQuery({
     queryKey: servicesKeys.list(params),
-    queryFn:  () => servicesService.getAll(params).then((r) => r.data),
+    queryFn:  () => servicesService.getAll(params).then((r) => r.data.results),
     staleTime: 2 * 60 * 1000,
     placeholderData: FALLBACK_SERVICES,
   });
 
   const { data: categories } = useQuery({
     queryKey: servicesKeys.categories,
-    queryFn:  () => servicesService.getCategories().then((r) => r.data),
+    queryFn:  () => servicesService.getCategories().then((r) => r.data.results),
     staleTime: 10 * 60 * 1000,
   });
 
@@ -212,10 +220,10 @@ export default function ServicesPage() {
             className="text-center mb-14"
           >
             <h1 className="text-5xl sm:text-6xl font-bold mb-4">
-              Technology <span className="gradient-text">Services</span>
+              <span className="gradient-text">{t("services_page.title")}</span>
             </h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              End-to-end engineering — from strategy to production deployment.
+              {t("services_page.subtitle")}
             </p>
           </motion.div>
 
@@ -229,7 +237,7 @@ export default function ServicesPage() {
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search services…"
+                placeholder={t("services_page.search_placeholder")}
                 className="w-full pl-11 pr-10 py-3 rounded-xl bg-card border border-border focus:border-brand-500/50 focus:ring-2 focus:ring-brand-500/20 outline-none text-sm transition-all"
               />
               {search && (
@@ -252,7 +260,7 @@ export default function ServicesPage() {
                     : "bg-card border border-border text-muted-foreground hover:border-brand-500/50"
                 }`}
               >
-                All
+                {t("common.all")}
               </button>
 
               {categories?.map((cat) => (
@@ -285,7 +293,7 @@ export default function ServicesPage() {
                     : "bg-card border border-border text-muted-foreground hover:border-amber-500/50"
                 }`}
               >
-                ★ Featured
+                {t("services_page.featured_filter")}
               </button>
             </div>
           </div>
@@ -293,16 +301,14 @@ export default function ServicesPage() {
           {/* ── Results count ───────────────────────────────────────────── */}
           <div className="flex items-center justify-between mb-6">
             <p className="text-sm text-muted-foreground">
-              {servicesLoading
-                ? "Loading…"
-                : `${displayedServices.length} service${displayedServices.length !== 1 ? "s" : ""}`}
+              {servicesLoading ? t("common.loading") : `${displayedServices.length} service${displayedServices.length !== 1 ? "s" : ""}`}
             </p>
             {(search || activeCategory !== "all" || featuredOnly) && (
               <button
                 onClick={() => { setSearch(""); setCategory("all"); setFeatured(false); }}
                 className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1"
               >
-                <X className="h-3 w-3" /> Clear filters
+                <X className="h-3 w-3" /> {t("services_page.clear_filters")}
               </button>
             )}
           </div>
@@ -311,8 +317,8 @@ export default function ServicesPage() {
           {displayedServices.length === 0 ? (
             <div className="text-center py-24 text-muted-foreground">
               <Search className="h-10 w-10 mx-auto mb-4 opacity-30" />
-              <p className="text-lg font-medium">No services match your search.</p>
-              <p className="text-sm mt-1">Try a different keyword or clear the filters.</p>
+              <p className="text-lg font-medium">{t("services_page.no_match")}</p>
+              <p className="text-sm mt-1">{t("services_page.no_match_hint")}</p>
             </div>
           ) : (
             <motion.div
@@ -321,7 +327,7 @@ export default function ServicesPage() {
             >
               <AnimatePresence mode="popLayout">
                 {displayedServices.map((service, i) => (
-                  <ServiceCard key={service.id} service={service} index={i} />
+                  <ServiceCard key={service.id} service={service} index={i} exploreLabel={t("services.explore")} featuredLabel={t("services_page.featured_badge")} />
                 ))}
               </AnimatePresence>
             </motion.div>

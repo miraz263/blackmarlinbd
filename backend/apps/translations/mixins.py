@@ -41,6 +41,21 @@ class TranslatableSerializerMixin:
         return getattr(request, "LANGUAGE", "en") if request else "en"
 
     @staticmethod
+    def _get_active_lang_codes() -> list[str]:
+        """Return active language codes from the database (cached 5 min via Django cache)."""
+        from django.core.cache import cache
+        key = "active_language_codes"
+        codes = cache.get(key)
+        if codes is None:
+            try:
+                from .models import Language
+                codes = list(Language.objects.filter(is_active=True).values_list("code", flat=True))
+            except Exception:
+                codes = ["en", "bn", "ar", "fr", "es"]
+            cache.set(key, codes, 300)
+        return codes
+
+    @staticmethod
     def _fetch_translations(obj, fields: list[str], languages: list[str]) -> dict[str, dict[str, str]]:
         """Return {language: {field: value}} for the given object."""
         from django.contrib.contenttypes.models import ContentType
@@ -78,9 +93,9 @@ class TranslatableSerializerMixin:
             return rep
 
         lang = self._lang
-        active_langs = ["en", "bn"]  # extend when Arabic is activated
+        active_langs = self._get_active_lang_codes()
 
-        trans_map = self._fetch_translations(instance, self.translatable_fields, active_langs)
+        trans_map = self._fetch_translations(instance, self.translatable_fields, list(active_langs))
 
         # Replace field values with the current language translation
         for field in self.translatable_fields:

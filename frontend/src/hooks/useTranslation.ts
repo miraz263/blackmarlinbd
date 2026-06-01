@@ -1,9 +1,12 @@
 import { useLanguageStore } from "@/store/languageStore";
 import en from "@/i18n/en.json";
 import bn from "@/i18n/bn.json";
+import ar from "@/i18n/ar.json";
+import fr from "@/i18n/fr.json";
+import es from "@/i18n/es.json";
 
 type TranslationMap = Record<string, string>;
-const STRINGS: Record<string, TranslationMap> = { en, bn };
+const STRINGS: Record<string, TranslationMap> = { en, bn, ar, fr, es };
 
 export function useTranslation() {
   const { language, direction } = useLanguageStore();

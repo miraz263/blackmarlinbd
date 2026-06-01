@@ -34,14 +34,37 @@ SEED_LANGUAGES = [
         "name":        "Arabic",
         "native_name": "العربية",
         "direction":   "rtl",
-        "is_active":   False,  # Prepared but inactive until content is ready
+        "is_active":   True,
         "is_default":  False,
         "order":       3,
     },
+    {
+        "code":        "fr",
+        "name":        "French",
+        "native_name": "Français",
+        "direction":   "ltr",
+        "is_active":   True,
+        "is_default":  False,
+        "order":       4,
+    },
+    {
+        "code":        "es",
+        "name":        "Spanish",
+        "native_name": "Español",
+        "direction":   "ltr",
+        "is_active":   True,
+        "is_default":  False,
+        "order":       5,
+    },
 ]
 
-# Path to the frontend i18n JSON files (relative to repo root)
-FRONTEND_I18N_DIR = Path(__file__).resolve().parents[6] / "frontend" / "src" / "i18n"
+# Path to the frontend i18n JSON files — resolved relative to repo root when available
+try:
+    FRONTEND_I18N_DIR = Path(__file__).resolve().parents[6] / "frontend" / "src" / "i18n"
+except IndexError:
+    # In Docker the mount point is shallower; fall back to a non-existent path so the
+    # directory-existence check below skips UI string seeding gracefully.
+    FRONTEND_I18N_DIR = Path("/nonexistent/i18n")
 
 
 class Command(BaseCommand):
@@ -68,6 +91,13 @@ class Command(BaseCommand):
             self.stdout.write("Cleared all UI translations.")
 
         total = 0
+        if not FRONTEND_I18N_DIR.is_dir():
+            self.stdout.write(self.style.WARNING(
+                f"Frontend i18n directory not found ({FRONTEND_I18N_DIR}); skipping UI string seeding."
+            ))
+            self.stdout.write(self.style.SUCCESS("Done. 0 UI strings seeded."))
+            return
+
         for json_file in FRONTEND_I18N_DIR.glob("*.json"):
             lang_code = json_file.stem  # filename without extension
             try:

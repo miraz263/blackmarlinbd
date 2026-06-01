@@ -3,9 +3,10 @@ import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowRight, ExternalLink, Github } from "lucide-react";
 import { projectsApi } from "@/services/api/projects";
+import { useTranslation } from "@/hooks/useTranslation";
 import type { Project } from "@/types";
 
-function ProjectCard({ project, index }: { project: Project; index: number }) {
+function ProjectCard({ project, index, viewDetails }: { project: Project; index: number; viewDetails: string }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 40 }}
@@ -90,7 +91,7 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
           to={`/projects/${project.slug}`}
           className="inline-flex items-center gap-1 text-sm font-medium text-brand-400 hover:text-brand-300 transition-colors"
         >
-          View details <ArrowRight className="h-3.5 w-3.5" />
+          {viewDetails} <ArrowRight className="h-3.5 w-3.5" />
         </Link>
       </div>
     </motion.div>
@@ -98,9 +99,10 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
 }
 
 export function FeaturedProjects() {
+  const { t } = useTranslation();
   const { data: projects, isLoading } = useQuery({
     queryKey: ["featured-projects"],
-    queryFn: () => projectsApi.featured().then((r) => r.data),
+    queryFn: () => projectsApi.featured().then((r) => r.data.results),
     staleTime: 5 * 60 * 1000,
   });
 
@@ -115,17 +117,17 @@ export function FeaturedProjects() {
         >
           <div>
             <span className="inline-block px-4 py-1.5 rounded-full bg-brand-500/10 text-brand-400 text-sm font-medium border border-brand-500/20 mb-4">
-              Portfolio
+              {t("projects.portfolio")}
             </span>
             <h2 className="text-4xl sm:text-5xl font-bold text-foreground">
-              Featured <span className="gradient-text">Projects</span>
+              <span className="gradient-text">{t("projects.featured_title")}</span>
             </h2>
           </div>
           <Link
             to="/projects"
             className="inline-flex items-center gap-2 text-brand-400 hover:text-brand-300 font-medium transition-colors whitespace-nowrap"
           >
-            View all projects <ArrowRight className="h-4 w-4" />
+            {t("projects.view_all")} <ArrowRight className="h-4 w-4" />
           </Link>
         </motion.div>
 
@@ -138,7 +140,7 @@ export function FeaturedProjects() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {projects?.map((project, i) => (
-              <ProjectCard key={project.id} project={project} index={i} />
+              <ProjectCard key={project.id} project={project} index={i} viewDetails={t("projects.view_details")} />
             ))}
           </div>
         )}

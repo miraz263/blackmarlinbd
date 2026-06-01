@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { authApi } from "@/services/api/auth";
 import { siteService, siteKeys } from "@/services/siteService";
+import { useTranslation } from "@/hooks/useTranslation";
 
 // Inline SVG brand icons — lucide-react dropped brand logos in recent versions
 const IconGithub = (props: React.SVGProps<SVGSVGElement>) => (
@@ -38,28 +39,38 @@ const IconInstagram = (props: React.SVGProps<SVGSVGElement>) => (
   </svg>
 );
 
-const footerLinks = {
-  Company: [
-    { label: "About Us", href: "/about" },
-    { label: "Careers", href: "/careers" },
-    { label: "Blog", href: "/blog" },
-    { label: "Contact", href: "/contact" },
-  ],
-  Services: [
-    { label: "AI & Machine Learning", href: "/services#ai-ml" },
-    { label: "Financial Systems", href: "/services#financial" },
-    { label: "Cloud & DevOps", href: "/services#cloud" },
-    { label: "Web & Mobile", href: "/services#web-mobile" },
-    { label: "Cybersecurity", href: "/services#security" },
-  ],
-  Legal: [
-    { label: "Privacy Policy", href: "/privacy" },
-    { label: "Terms of Service", href: "/terms" },
-    { label: "Cookie Policy", href: "/cookies" },
-  ],
-};
+const FOOTER_LINK_GROUPS = [
+  {
+    titleKey: "footer.company",
+    links: [
+      { labelKey: "footer.about_us",   href: "/about" },
+      { labelKey: "nav.careers",       href: "/careers" },
+      { labelKey: "nav.blog",          href: "/blog" },
+      { labelKey: "nav.contact",       href: "/contact" },
+    ],
+  },
+  {
+    titleKey: "footer.services",
+    links: [
+      { labelKey: "services.s_ai_title",    href: "/services#ai-ml" },
+      { labelKey: "services.s_fin_title",   href: "/services#financial" },
+      { labelKey: "services.s_cloud_title", href: "/services#cloud" },
+      { labelKey: "services.s_web_title",   href: "/services#web-mobile" },
+      { labelKey: "services.s_cyber_title", href: "/services#security" },
+    ],
+  },
+  {
+    titleKey: "footer.legal",
+    links: [
+      { labelKey: "footer.privacy", href: "/privacy" },
+      { labelKey: "footer.terms",   href: "/terms" },
+      { labelKey: "footer.cookies", href: "/cookies" },
+    ],
+  },
+] as const;
 
 export function Footer() {
+  const { t } = useTranslation();
   const [email, setEmail] = useState("");
   const [subscribed, setSubscribed] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -92,10 +103,13 @@ export function Footer() {
   };
 
   // ── Derived display values (fall back to defaults until API responds) ──────
+  const EN_ABOUT = "Building the digital future through cutting-edge AI, cloud, and enterprise systems. Trusted by global leaders across finance, tech, and beyond.";
+
   const companyName = site?.company_name ?? "BlackMarlinBD";
   const aboutText =
-    footer?.footer_about ??
-    "Building the digital future through cutting-edge AI, cloud, and enterprise systems. Trusted by global leaders across finance, tech, and beyond.";
+    footer?.footer_about && footer.footer_about !== EN_ABOUT
+      ? footer.footer_about
+      : t("footer.about_text");
   const copyrightText =
     footer?.copyright_text ?? `${companyName}. All rights reserved.`;
   const newsletterEnabled = footer?.newsletter_enabled ?? true;
@@ -187,17 +201,17 @@ export function Footer() {
           </div>
 
           {/* Link columns */}
-          {Object.entries(footerLinks).map(([title, links]) => (
-            <div key={title}>
-              <h3 className="font-semibold text-foreground mb-4">{title}</h3>
+          {FOOTER_LINK_GROUPS.map((group) => (
+            <div key={group.titleKey}>
+              <h3 className="font-semibold text-foreground mb-4">{t(group.titleKey)}</h3>
               <ul className="space-y-3">
-                {links.map((link) => (
-                  <li key={link.label}>
+                {group.links.map((link) => (
+                  <li key={link.href}>
                     <Link
                       to={link.href}
                       className="text-sm text-muted-foreground hover:text-brand-400 transition-colors duration-200"
                     >
-                      {link.label}
+                      {"labelKey" in link ? t(link.labelKey) : (link as { label: string }).label}
                     </Link>
                   </li>
                 ))}
@@ -211,13 +225,13 @@ export function Footer() {
           <div className="mt-12 p-6 rounded-2xl glass dark:glass-dark border border-border">
             <div className="flex flex-col md:flex-row items-center gap-6">
               <div className="flex-1">
-                <h3 className="font-semibold text-foreground mb-1">Stay in the loop</h3>
+                <h3 className="font-semibold text-foreground mb-1">{t("footer.newsletter_title")}</h3>
                 <p className="text-sm text-muted-foreground">
-                  Get the latest insights on AI, cloud, and tech delivered to your inbox.
+                  {t("footer.newsletter_desc")}
                 </p>
               </div>
               {subscribed ? (
-                <p className="text-brand-400 font-medium text-sm">✓ Subscribed! Thank you.</p>
+                <p className="text-brand-400 font-medium text-sm">{t("footer.subscribed")}</p>
               ) : (
                 <form onSubmit={handleSubscribe} className="flex gap-2 w-full md:w-auto">
                   <input
@@ -229,7 +243,7 @@ export function Footer() {
                     required
                   />
                   <Button type="submit" variant="gradient" size="sm" loading={loading}>
-                    Subscribe
+                    {t("footer.subscribe")}
                   </Button>
                 </form>
               )}
@@ -242,7 +256,7 @@ export function Footer() {
           <p className="text-xs text-muted-foreground">
             © {new Date().getFullYear()} {copyrightText}
           </p>
-          <p className="text-xs text-muted-foreground">Built with ❤️ for a better digital world</p>
+          <p className="text-xs text-muted-foreground">{t("footer.tagline")}</p>
         </div>
       </div>
     </footer>

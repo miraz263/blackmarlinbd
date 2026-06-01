@@ -1,5 +1,5 @@
 import { apiClient } from "./api/client";
-import type { BuilderPage, BuilderPageListItem, BuilderBlock, BuilderBlockType, BuilderSection } from "@/types";
+import type { BuilderPage, BuilderPageListItem, BuilderBlock, BuilderBlockType, BuilderSection, PaginatedResponse } from "@/types";
 
 export const pbKeys = {
   all:     ["pages"]                               as const,
@@ -10,7 +10,7 @@ export const pbKeys = {
 export const pageBuilderService = {
   // ── Pages ──────────────────────────────────────────────────────────────
   listPages: () =>
-    apiClient.get<BuilderPageListItem[]>("/pages/"),
+    apiClient.get<PaginatedResponse<BuilderPageListItem>>("/pages/"),
 
   getPage: (slug: string) =>
     apiClient.get<BuilderPage>(`/pages/${slug}/`),

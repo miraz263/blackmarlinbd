@@ -5,7 +5,7 @@ export const blogApi = {
   list: (params?: Record<string, string | number | boolean>) =>
     apiClient.get<PaginatedResponse<BlogPost>>("/blog/", { params }),
 
-  featured: () => apiClient.get<BlogPost[]>("/blog/featured/"),
+  featured: () => apiClient.get<PaginatedResponse<BlogPost>>("/blog/featured/"),
 
   get: (slug: string) => apiClient.get<BlogPost>(`/blog/${slug}/`),
 
@@ -23,6 +23,6 @@ export const blogApi = {
     apiClient.post(`/blog/${slug}/comments/`, { content, parent }),
 
   categories: {
-    list: () => apiClient.get<BlogCategory[]>("/blog/categories/"),
+    list: () => apiClient.get<PaginatedResponse<BlogCategory>>("/blog/categories/"),
   },
 };

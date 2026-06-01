@@ -55,7 +55,7 @@ function NotificationBell() {
 
   const { data: notifications = [] } = useQuery({
     queryKey: workflowKeys.notifications,
-    queryFn: () => workflowService.getNotifications().then((r) => r.data),
+    queryFn: () => workflowService.getNotifications().then((r) => r.data.results),
     enabled: open,
     staleTime: 15_000,
   });

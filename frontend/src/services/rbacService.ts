@@ -1,5 +1,5 @@
 import { apiClient } from "./api/client";
-import type { RBACRole, RBACPermission, UserAdmin, MyPermissions } from "@/types";
+import type { RBACRole, RBACPermission, UserAdmin, MyPermissions, PaginatedResponse } from "@/types";
 
 export const rbacKeys = {
   all:         ["rbac"]                                  as const,
@@ -18,11 +18,11 @@ export const rbacService = {
 
   // ── Permissions catalogue ───────────────────────────────────────────────
   getPermissions: () =>
-    apiClient.get<RBACPermission[]>("/admin/permissions/"),
+    apiClient.get<PaginatedResponse<RBACPermission>>("/admin/permissions/"),
 
   // ── Roles ────────────────────────────────────────────────────────────────
   getRoles: () =>
-    apiClient.get<RBACRole[]>("/admin/roles/"),
+    apiClient.get<PaginatedResponse<RBACRole>>("/admin/roles/"),
 
   getRole: (slug: string) =>
     apiClient.get<RBACRole>(`/admin/roles/${slug}/`),
@@ -38,7 +38,7 @@ export const rbacService = {
 
   // ── Users ────────────────────────────────────────────────────────────────
   getUsers: () =>
-    apiClient.get<UserAdmin[]>("/admin/users/"),
+    apiClient.get<PaginatedResponse<UserAdmin>>("/admin/users/"),
 
   getUser: (id: number) =>
     apiClient.get<UserAdmin>(`/admin/users/${id}/`),

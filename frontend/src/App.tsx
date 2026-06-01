@@ -1,7 +1,8 @@
 import { Suspense, lazy, useEffect } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { queryClient } from "@/lib/queryClient";
 import { HelmetProvider } from "react-helmet-async";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
@@ -15,10 +16,14 @@ const AboutPage = lazy(() => import("@/pages/AboutPage"));
 const ServicesPage = lazy(() => import("@/pages/ServicesPage"));
 const ServiceDetailPage = lazy(() => import("@/pages/ServiceDetailPage"));
 const ProjectsPage = lazy(() => import("@/pages/ProjectsPage"));
+const ProjectDetailPage = lazy(() => import("@/pages/ProjectDetailPage"));
+const ProductsPage      = lazy(() => import("@/pages/ProductsPage"));
+const ProductDetailPage = lazy(() => import("@/pages/ProductDetailPage"));
 const BlogPage = lazy(() => import("@/pages/BlogPage"));
 const CareersPage = lazy(() => import("@/pages/CareersPage"));
 const ContactPage = lazy(() => import("@/pages/ContactPage"));
 const LoginPage = lazy(() => import("@/pages/LoginPage"));
+const RegisterPage = lazy(() => import("@/pages/RegisterPage"));
 const DashboardLayout = lazy(() => import("@/pages/dashboard/DashboardLayout"));
 const DashboardOverview = lazy(() => import("@/pages/dashboard/DashboardOverview"));
 const MediaManagerPage = lazy(() => import("@/pages/dashboard/MediaManagerPage"));
@@ -30,16 +35,8 @@ const WorkflowPage       = lazy(() => import("@/pages/dashboard/WorkflowPage"));
 const AnalyticsPage      = lazy(() => import("@/pages/dashboard/AnalyticsPage"));
 const TranslationsPage   = lazy(() => import("@/pages/dashboard/TranslationsPage"));
 const AIPage             = lazy(() => import("@/pages/dashboard/AIPage"));
-
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 60 * 1000,
-      retry: 1,
-      refetchOnWindowFocus: false,
-    },
-  },
-});
+const SettingsPage       = lazy(() => import("@/pages/dashboard/SettingsPage"));
+const ProjectsManagerPage = lazy(() => import("@/pages/dashboard/ProjectsManagerPage"));
 
 function PageLoader() {
   return (
@@ -89,11 +86,15 @@ function AppContent() {
         <Route path="/about" element={<PublicLayout><AboutPage /></PublicLayout>} />
         <Route path="/services" element={<PublicLayout><ServicesPage /></PublicLayout>} />
         <Route path="/services/:slug" element={<PublicLayout><ServiceDetailPage /></PublicLayout>} />
+        <Route path="/products" element={<PublicLayout><ProductsPage /></PublicLayout>} />
+        <Route path="/products/:productSlug" element={<PublicLayout><ProductDetailPage /></PublicLayout>} />
         <Route path="/projects" element={<PublicLayout><ProjectsPage /></PublicLayout>} />
+        <Route path="/projects/:slug" element={<PublicLayout><ProjectDetailPage /></PublicLayout>} />
         <Route path="/blog" element={<PublicLayout><BlogPage /></PublicLayout>} />
         <Route path="/careers" element={<PublicLayout><CareersPage /></PublicLayout>} />
         <Route path="/contact" element={<PublicLayout><ContactPage /></PublicLayout>} />
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
         <Route path="/p/:slug" element={<DynamicPage />} />
 
         {/* Dashboard routes */}
@@ -107,10 +108,11 @@ function AppContent() {
           <Route path="analytics"     element={<Suspense fallback={<PageLoader />}><AnalyticsPage /></Suspense>} />
           <Route path="translations" element={<Suspense fallback={<PageLoader />}><TranslationsPage /></Suspense>} />
           <Route path="ai"           element={<Suspense fallback={<PageLoader />}><AIPage /></Suspense>} />
-          <Route path="projects" element={<Suspense fallback={<PageLoader />}><div className="p-4 text-muted-foreground">Projects manager — full CRUD</div></Suspense>} />
+          <Route path="projects" element={<Suspense fallback={<PageLoader />}><ProjectsManagerPage /></Suspense>} />
           <Route path="blog" element={<Suspense fallback={<PageLoader />}><div className="p-4 text-muted-foreground">Blog manager — full CRUD</div></Suspense>} />
           <Route path="jobs" element={<Suspense fallback={<PageLoader />}><div className="p-4 text-muted-foreground">Jobs manager — full CRUD</div></Suspense>} />
-          <Route path="users" element={<Suspense fallback={<PageLoader />}><div className="p-4 text-muted-foreground">Users manager</div></Suspense>} />
+          <Route path="users"    element={<Suspense fallback={<PageLoader />}><div className="p-4 text-muted-foreground">Users manager</div></Suspense>} />
+          <Route path="settings" element={<Suspense fallback={<PageLoader />}><SettingsPage /></Suspense>} />
         </Route>
 
         {/* 404 */}

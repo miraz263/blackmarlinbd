@@ -58,7 +58,7 @@ export function WorkflowStatusPanel({
 
   const { data: history = [] } = useQuery({
     queryKey: workflowKeys.history(review?.id ?? 0),
-    queryFn: () => workflowService.getHistory(review!.id).then((r) => r.data),
+    queryFn: () => workflowService.getHistory(review!.id).then((r) => r.data.results),
     enabled: showHistory && !!review,
     staleTime: 30_000,
   });
