@@ -8,9 +8,10 @@ export interface User {
   avatar: string | null;
   bio: string;
   role: "admin" | "editor" | "viewer";
+  is_active: boolean;
   is_newsletter_subscribed: boolean;
   date_joined: string;
-  last_login: string;
+  last_login: string | null;
 }
 
 // ─── Category ──────────────────────────────────────────────────────────────
@@ -54,6 +55,36 @@ export interface ProjectImage {
   image: string;
   alt_text: string;
   order: number;
+}
+
+// ─── Products (DB-backed) ──────────────────────────────────────────────────
+export interface ProductCategory {
+  id: number;
+  name: string;
+  slug: string;
+  icon_name: string;
+  order: number;
+  product_count: number;
+}
+
+export interface ProductDB {
+  id: number;
+  name: string;
+  slug: string;
+  tagline: string;
+  description: string;
+  category: ProductCategory | null;
+  icon_name: string;
+  icon_color: string;
+  badge: string;
+  is_new: boolean;
+  is_featured: boolean;
+  is_active: boolean;
+  nav_section: "products" | "services" | "featured" | "hidden";
+  demo_url: string;
+  order: number;
+  created_at: string;
+  updated_at: string;
 }
 
 // ─── Blog ──────────────────────────────────────────────────────────────────
@@ -166,6 +197,10 @@ export interface FooterSettings {
 
 export interface ContactSettings {
   id: number;
+  page_title: string;
+  page_subtitle: string;
+  response_time_text: string;
+  response_time_desc: string;
   office_hours: string;
   support_email: string;
   sales_email: string;
@@ -362,10 +397,20 @@ export interface TeamMember {
   is_published: boolean;
 }
 
+export interface AboutStatistic {
+  id: number;
+  icon_name: string;
+  value: string;
+  label: string;
+  order: number;
+  is_published: boolean;
+}
+
 export interface AboutData {
   page: AboutPage;
   mission: Mission;
   vision: Vision;
+  statistics: AboutStatistic[];
   values: CoreValue[];
   team: TeamMember[];
 }

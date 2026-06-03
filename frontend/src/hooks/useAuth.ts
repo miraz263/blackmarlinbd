@@ -8,7 +8,7 @@ export function useAuth() {
     if (!isAuthenticated && !isLoading) {
       fetchMe();
     }
-  }, []);
+  }, [fetchMe, isAuthenticated, isLoading]);
 
   return { user, isAuthenticated, isLoading, login, logout };
 }

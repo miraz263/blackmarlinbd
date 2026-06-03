@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
   # ─── PostgreSQL ──────────────────────────────────────────────────────────────
   db:
@@ -23,13 +21,15 @@ services:
   redis:
     image: redis:7-alpine
     restart: unless-stopped
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-redis_password}
     command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-redis_password}
     volumes:
       - redis_data:/data
     ports:
       - "6379:6379"
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ["CMD-SHELL", "redis-cli -a \"$${REDIS_PASSWORD:-redis_password}\" ping | grep -q PONG"]
       interval: 10s
       timeout: 5s
       retries: 5

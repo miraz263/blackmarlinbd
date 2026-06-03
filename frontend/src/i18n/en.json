@@ -315,6 +315,14 @@
   "products.not_found_desc": "This product doesn't exist or is coming soon.",
   "products.all_products": "All Products",
 
+  "projects.our_work": "Our Work",
+  "projects.unified_title": "Projects & Products",
+  "projects.unified_subtitle": "From custom client engineering to ready-made enterprise software — everything we build, in one place.",
+  "projects.tab_portfolio": "Portfolio",
+  "projects.tab_portfolio_desc": "Client projects & case studies",
+  "projects.tab_products": "Products",
+  "projects.tab_products_desc": "Software products & platforms",
+
   "hero.badge": "Trusted by Fortune 500 Companies",
   "hero.title": "We Build Intelligent Systems That Scale",
   "hero.description": "BlackMarlinBD is a global IT firm specializing in AI, financial technology, cloud infrastructure, and enterprise software — engineering tomorrow's solutions today.",

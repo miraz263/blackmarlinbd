@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -343,8 +343,8 @@ function ContentEditor({
     },
   });
 
-  const currentTrans = translations?.[activeLang] ?? {};
-  const sourceTrans  = translations?.["en"] ?? {};
+  const currentTrans = useMemo(() => translations?.[activeLang] ?? {}, [translations, activeLang]);
+  const sourceTrans  = useMemo(() => translations?.["en"] ?? {}, [translations]);
 
   const getValue = useCallback(
     (field: string) => drafts[field] ?? currentTrans[field] ?? "",

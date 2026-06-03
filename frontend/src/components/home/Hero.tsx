@@ -13,11 +13,6 @@ const ICON_MAP: Record<string, LucideIcon> = {
   Zap, Star, Users, TrendingUp, Award, Globe,
 };
 
-// Known English defaults — detect untranslated DB content and prefer i18n instead
-const EN_BADGE = "Trusted by Fortune 500 Companies";
-const EN_TITLE = "We Build Intelligent Systems That Scale";
-const EN_DESC =
-  "BlackMarlinBD is a global IT firm specializing in AI, financial technology, cloud infrastructure, and enterprise software — engineering tomorrow's solutions today.";
 
 const FLOATING_BADGE_CONFIGS = [
   { key: "hero.floating_ai",       color: "from-purple-500 to-brand-500", x: "-5%", y: "20%" },
@@ -67,13 +62,9 @@ export function Hero() {
   const hero = data?.hero;
   const buttons = hero?.buttons?.filter((b) => b.is_published) ?? [];
 
-  // If DB returns the unchanged English default, use i18n translation instead.
-  // If admin has customized the content (different string), the DB value is used as-is.
-  // When admin adds a DB translation via the Translations Dashboard, the API returns that
-  // translated string (different from EN_*), so it takes priority automatically.
-  const heroBadge = hero?.badge_text && hero.badge_text !== EN_BADGE ? hero.badge_text : t("hero.badge");
-  const heroTitle = hero?.title && hero.title !== EN_TITLE ? hero.title : t("hero.title");
-  const heroDesc = hero?.description && hero.description !== EN_DESC ? hero.description : t("hero.description");
+  const heroBadge = hero?.badge_text  || t("hero.badge");
+  const heroTitle = hero?.title        || t("hero.title");
+  const heroDesc  = hero?.description  || t("hero.description");
 
   const stats: StatisticCard[] = data?.statistics?.length
     ? data.statistics

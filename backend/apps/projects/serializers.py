@@ -1,3 +1,5 @@
+import json
+
 from rest_framework import serializers
 from taggit.serializers import TagListSerializerField, TaggitSerializer
 from .models import Category, Project, ProjectImage
@@ -38,6 +40,8 @@ class ProjectDetailSerializer(TaggitSerializer, serializers.ModelSerializer):
         queryset=Category.objects.all(), source="category", write_only=True, required=False
     )
     images = ProjectImageSerializer(many=True, read_only=True)
+    # binary=True so multipart string input is JSON-parsed (e.g. '["React","Django"]' → list)
+    tech_stack = serializers.JSONField(required=False)
 
     class Meta:
         model = Project
@@ -49,3 +53,13 @@ class ProjectDetailSerializer(TaggitSerializer, serializers.ModelSerializer):
             "images", "created_at", "updated_at",
         )
         read_only_fields = ("slug", "views_count", "created_at", "updated_at")
+
+    def validate_tech_stack(self, value):
+        if isinstance(value, str):
+            try:
+                value = json.loads(value)
+            except json.JSONDecodeError as exc:
+                raise serializers.ValidationError("Must be a JSON array.") from exc
+        if not isinstance(value, list):
+            raise serializers.ValidationError("Must be a list.")
+        return value

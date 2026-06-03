@@ -88,6 +88,17 @@ class FooterSettings(SingletonModel):
 class ContactSettings(SingletonModel):
     """Contact-page specific configuration."""
 
+    page_title = models.CharField(max_length=200, blank=True, default="Let's Build Together")
+    page_subtitle = models.CharField(
+        max_length=400, blank=True,
+        default="Tell us about your project. We'll get back to you within 24 hours.",
+    )
+    response_time_text = models.CharField(
+        max_length=200, blank=True, default="⚡ We respond within 24 hours"
+    )
+    response_time_desc = models.CharField(
+        max_length=300, blank=True, default="For urgent inquiries, call us directly."
+    )
     office_hours = models.CharField(
         max_length=200,
         blank=True,

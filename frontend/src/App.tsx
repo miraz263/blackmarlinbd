@@ -37,6 +37,15 @@ const TranslationsPage   = lazy(() => import("@/pages/dashboard/TranslationsPage
 const AIPage             = lazy(() => import("@/pages/dashboard/AIPage"));
 const SettingsPage       = lazy(() => import("@/pages/dashboard/SettingsPage"));
 const ProjectsManagerPage = lazy(() => import("@/pages/dashboard/ProjectsManagerPage"));
+const ProductsManagerPage = lazy(() => import("@/pages/dashboard/ProductsManagerPage"));
+const JobsManagerPage     = lazy(() => import("@/pages/dashboard/JobsManagerPage"));
+const BlogManagerPage     = lazy(() => import("@/pages/dashboard/BlogManagerPage"));
+const UsersManagerPage    = lazy(() => import("@/pages/dashboard/UsersManagerPage"));
+const AboutManagerPage    = lazy(() => import("@/pages/dashboard/AboutManagerPage"));
+const HomepageManagerPage = lazy(() => import("@/pages/dashboard/HomepageManagerPage"));
+const ContactManagerPage  = lazy(() => import("@/pages/dashboard/ContactManagerPage"));
+const ContactsInboxPage   = lazy(() => import("@/pages/dashboard/ContactsInboxPage"));
+const ViewerDashboardPage = lazy(() => import("@/pages/ViewerDashboardPage"));
 
 function PageLoader() {
   return (
@@ -76,7 +85,7 @@ function AppContent() {
 
   useEffect(() => {
     fetchMe();
-  }, []);
+  }, [fetchMe]);
 
   return (
     <Suspense fallback={<PageLoader />}>
@@ -93,6 +102,7 @@ function AppContent() {
         <Route path="/blog" element={<PublicLayout><BlogPage /></PublicLayout>} />
         <Route path="/careers" element={<PublicLayout><CareersPage /></PublicLayout>} />
         <Route path="/contact" element={<PublicLayout><ContactPage /></PublicLayout>} />
+        <Route path="/my-account" element={<ViewerDashboardPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/p/:slug" element={<DynamicPage />} />
@@ -109,10 +119,15 @@ function AppContent() {
           <Route path="translations" element={<Suspense fallback={<PageLoader />}><TranslationsPage /></Suspense>} />
           <Route path="ai"           element={<Suspense fallback={<PageLoader />}><AIPage /></Suspense>} />
           <Route path="projects" element={<Suspense fallback={<PageLoader />}><ProjectsManagerPage /></Suspense>} />
-          <Route path="blog" element={<Suspense fallback={<PageLoader />}><div className="p-4 text-muted-foreground">Blog manager — full CRUD</div></Suspense>} />
-          <Route path="jobs" element={<Suspense fallback={<PageLoader />}><div className="p-4 text-muted-foreground">Jobs manager — full CRUD</div></Suspense>} />
-          <Route path="users"    element={<Suspense fallback={<PageLoader />}><div className="p-4 text-muted-foreground">Users manager</div></Suspense>} />
+          <Route path="products" element={<Suspense fallback={<PageLoader />}><ProductsManagerPage /></Suspense>} />
+          <Route path="blog" element={<Suspense fallback={<PageLoader />}><BlogManagerPage /></Suspense>} />
+          <Route path="jobs" element={<Suspense fallback={<PageLoader />}><JobsManagerPage /></Suspense>} />
+          <Route path="users"    element={<Suspense fallback={<PageLoader />}><UsersManagerPage /></Suspense>} />
           <Route path="settings" element={<Suspense fallback={<PageLoader />}><SettingsPage /></Suspense>} />
+          <Route path="about"    element={<Suspense fallback={<PageLoader />}><AboutManagerPage /></Suspense>} />
+          <Route path="homepage" element={<Suspense fallback={<PageLoader />}><HomepageManagerPage /></Suspense>} />
+          <Route path="contact"  element={<Suspense fallback={<PageLoader />}><ContactManagerPage /></Suspense>} />
+          <Route path="inbox"    element={<Suspense fallback={<PageLoader />}><ContactsInboxPage /></Suspense>} />
         </Route>
 
         {/* 404 */}

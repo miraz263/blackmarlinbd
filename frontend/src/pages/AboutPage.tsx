@@ -3,7 +3,7 @@ import { SEOHead } from "@/components/seo/SEOHead";
 import { Link } from "react-router-dom";
 import {
   Users, Globe2, Award, Code2, Mail,
-  Zap, Shield, Heart, Lightbulb, Star, Target, Rocket, type LucideIcon,
+  Zap, Shield, Heart, Lightbulb, Star, Target, Rocket, BarChart2, type LucideIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAboutQuery } from "@/hooks/useAboutQuery";
@@ -12,26 +12,12 @@ import type { CoreValue, TeamMember } from "@/types";
 
 // ─── Icon maps ─────────────────────────────────────────────────────────────
 
-const VALUE_ICON_MAP: Record<string, LucideIcon> = {
-  Zap, Shield, Heart, Lightbulb, Star, Target, Rocket, Code2, Award, Globe2, Users,
+const ICON_MAP: Record<string, LucideIcon> = {
+  Zap, Shield, Heart, Lightbulb, Star, Target, Rocket, Code2, Award, Globe2, Users, BarChart2,
 };
 
-// ─── Known English defaults — detect untranslated DB content ───────────────
+const VALUE_ICON_MAP = ICON_MAP;
 
-const EN_PAGE_BADGE = "Our Story";
-const EN_PAGE_TITLE = "Engineering the Digital Future";
-
-// For the mission/vision titles (short, exact match is reliable)
-const EN_MISSION_TITLE = "Our Mission";
-const EN_VISION_TITLE  = "Our Vision";
-
-// Maps known English core-value titles to i18n keys
-const VALUE_I18N: Record<string, { titleKey: string; descKey: string }> = {
-  "Engineering Excellence": { titleKey: "about.val_excellence_title", descKey: "about.val_excellence_desc" },
-  "Client Obsession":       { titleKey: "about.val_client_title",     descKey: "about.val_client_desc" },
-  "Radical Transparency":   { titleKey: "about.val_transparency_title", descKey: "about.val_transparency_desc" },
-  "Continuous Innovation":  { titleKey: "about.val_innovation_title",  descKey: "about.val_innovation_desc" },
-};
 
 // ─── Fallback data ─────────────────────────────────────────────────────────
 
@@ -60,11 +46,11 @@ const AVATAR_GRADIENTS = [
   "from-orange-500 to-red-500",
 ];
 
-const STAT_KEYS = [
-  { icon: Code2,  value: "1M+",  key: "about.stat_code" },
-  { icon: Globe2, value: "25+",  key: "about.stat_countries" },
-  { icon: Users,  value: "120+", key: "about.stat_engineers" },
-  { icon: Award,  value: "15+",  key: "about.stat_awards" },
+const DEFAULT_STATS = [
+  { id: -1, icon_name: "Code2",  value: "1M+",  label: "Lines of Production Code", order: 0, is_published: true },
+  { id: -2, icon_name: "Globe2", value: "25+",  label: "Countries Served",          order: 1, is_published: true },
+  { id: -3, icon_name: "Users",  value: "120+", label: "Engineers Worldwide",       order: 2, is_published: true },
+  { id: -4, icon_name: "Award",  value: "15+",  label: "Industry Awards",           order: 3, is_published: true },
 ];
 
 // ─── Sub-components ────────────────────────────────────────────────────────
@@ -171,36 +157,25 @@ export default function AboutPage() {
   const { data } = useAboutQuery();
   const { t } = useTranslation();
 
-  const page    = data?.page;
-  const mission = data?.mission;
-  const vision  = data?.vision;
-  const rawValues = data?.values?.length ? data.values : FALLBACK_VALUES;
-  const team      = data?.team?.length   ? data.team   : FALLBACK_TEAM;
+  const page       = data?.page;
+  const mission    = data?.mission;
+  const vision     = data?.vision;
+  const statistics = data ? (data.statistics?.length ? data.statistics : []) : DEFAULT_STATS;
+  const rawValues  = data?.values?.length ? data.values : FALLBACK_VALUES;
+  const team       = data?.team?.length   ? data.team   : FALLBACK_TEAM;
 
-  // Apply i18n to known English defaults; pass custom/translated DB values through as-is
-  const pageBadge = page?.badge_text && page.badge_text !== EN_PAGE_BADGE
-    ? page.badge_text : t("about.our_story");
-  const pageTitle = page?.hero_title && page.hero_title !== EN_PAGE_TITLE
-    ? page.hero_title : t("about.hero_title");
-  // Description: match by prefix because DB may have a longer version of the same text
-  const pageDesc = page?.hero_description && !page.hero_description.startsWith("Founded in 2018")
-    ? page.hero_description : t("about.hero_description");
+  // DB value wins if non-empty; otherwise fall back to i18n translation
+  const pageBadge  = page?.badge_text       || t("about.our_story");
+  const pageTitle  = page?.hero_title        || t("about.hero_title");
+  const pageDesc   = page?.hero_description  || t("about.hero_description");
 
-  const missionTitle = mission?.title && mission.title !== EN_MISSION_TITLE
-    ? mission.title : t("about.mission_title");
-  const missionDesc = mission?.description && !mission.description.startsWith("To build world-class")
-    ? mission.description : t("about.mission_desc");
+  const missionTitle = mission?.title       || t("about.mission_title");
+  const missionDesc  = mission?.description || t("about.mission_desc");
 
-  const visionTitle = vision?.title && vision.title !== EN_VISION_TITLE
-    ? vision.title : t("about.vision_title");
-  const visionDesc = vision?.description && !vision.description.startsWith("To become the most trusted")
-    ? vision.description : t("about.vision_desc");
+  const visionTitle = vision?.title       || t("about.vision_title");
+  const visionDesc  = vision?.description || t("about.vision_desc");
 
-  // Translate known fallback values; pass custom admin values through unchanged
-  const values = rawValues.map((v) => {
-    const keys = VALUE_I18N[v.title];
-    return keys ? { ...v, title: t(keys.titleKey), description: t(keys.descKey) } : v;
-  });
+  const values = rawValues;
 
   return (
     <>
@@ -240,22 +215,25 @@ export default function AboutPage() {
         <section className="py-16 border-y border-border bg-accent/20">
           <div className="container mx-auto px-4">
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
-              {STAT_KEYS.map(({ icon: Icon, value, key }, i) => (
-                <motion.div
-                  key={key}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: i * 0.1 }}
-                  className="text-center"
-                >
-                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-brand-500/10 mb-3">
-                    <Icon className="h-6 w-6 text-brand-400" />
-                  </div>
-                  <div className="text-3xl font-bold gradient-text mb-1">{value}</div>
-                  <div className="text-sm text-muted-foreground">{t(key)}</div>
-                </motion.div>
-              ))}
+              {statistics.map((stat, i) => {
+                const Icon = ICON_MAP[stat.icon_name] ?? BarChart2;
+                return (
+                  <motion.div
+                    key={stat.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: i * 0.1 }}
+                    className="text-center"
+                  >
+                    <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-brand-500/10 mb-3">
+                      <Icon className="h-6 w-6 text-brand-400" />
+                    </div>
+                    <div className="text-3xl font-bold gradient-text mb-1">{stat.value}</div>
+                    <div className="text-sm text-muted-foreground">{stat.label}</div>
+                  </motion.div>
+                );
+              })}
             </div>
           </div>
         </section>

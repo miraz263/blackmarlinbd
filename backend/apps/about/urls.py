@@ -19,4 +19,9 @@ urlpatterns = [
     path("team/", views.TeamListView.as_view(), name="about-team"),
     path("team/reorder/", views.TeamReorderView.as_view(), name="about-team-reorder"),
     path("team/<int:pk>/", views.TeamDetailView.as_view(), name="about-team-detail"),
+
+    # Statistics
+    path("statistics/", views.StatisticListView.as_view(), name="about-statistics"),
+    path("statistics/reorder/", views.StatisticReorderView.as_view(), name="about-statistics-reorder"),
+    path("statistics/<int:pk>/", views.StatisticDetailView.as_view(), name="about-statistic-detail"),
 ]

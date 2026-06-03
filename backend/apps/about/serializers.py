@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import AboutPage, Mission, Vision, CoreValue, TeamMember
+from .models import AboutPage, Mission, Vision, CoreValue, TeamMember, AboutStatistic
 
 
 class AboutPageSerializer(serializers.ModelSerializer):
@@ -63,6 +63,12 @@ class TeamMemberSerializer(serializers.ModelSerializer):
         return (
             request.build_absolute_uri(obj.photo.url) if request else obj.photo.url
         )
+
+
+class AboutStatisticSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AboutStatistic
+        fields = ["id", "icon_name", "value", "label", "order", "is_published"]
 
 
 class ReorderSerializer(serializers.Serializer):

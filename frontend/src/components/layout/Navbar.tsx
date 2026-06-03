@@ -1,112 +1,15 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, Moon, Sun, ChevronDown, ArrowRight, Sparkles } from "lucide-react";
+import { Menu, X, Moon, Sun, ChevronDown, LayoutDashboard, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LanguageSwitcher } from "@/components/ui/LanguageSwitcher";
 import { useThemeStore } from "@/store/themeStore";
 import { useAuthStore } from "@/store/authStore";
 import { useTranslation } from "@/hooks/useTranslation";
 import { cn } from "@/lib/utils";
-import { PRODUCT_CATEGORIES } from "@/data/productCatalog";
 
-// ─── Products mega-menu (category tabs + product grid) ─────────────────────────
-
-function ProductsMegaMenu() {
-  const [activeCategory, setActiveCategory] = useState(PRODUCT_CATEGORIES[0].slug);
-  const cat = PRODUCT_CATEGORIES.find((c) => c.slug === activeCategory) ?? PRODUCT_CATEGORIES[0];
-  const CatIcon = cat.icon;
-
-  return (
-    <div className="flex" style={{ minHeight: 360 }}>
-      {/* Left — category list */}
-      <div className="w-48 border-r border-border shrink-0 py-3 px-2 space-y-0.5 bg-card/50">
-        <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground/50 px-2 pb-1">
-          Categories
-        </p>
-        {PRODUCT_CATEGORIES.map((c) => {
-          const Icon = c.icon;
-          return (
-            <button
-              key={c.slug}
-              onMouseEnter={() => setActiveCategory(c.slug)}
-              onClick={() => setActiveCategory(c.slug)}
-              className={cn(
-                "w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-left text-xs font-medium transition-all duration-100",
-                activeCategory === c.slug
-                  ? "bg-brand-500/15 text-brand-400"
-                  : "text-muted-foreground hover:bg-accent hover:text-foreground"
-              )}
-            >
-              <Icon className="h-3.5 w-3.5 shrink-0" />
-              <span className="truncate">{c.label}</span>
-              <span className="ml-auto text-[10px] opacity-50">{c.products.length}</span>
-            </button>
-          );
-        })}
-        <div className="pt-2 px-1">
-          <Link
-            to="/products"
-            className="flex items-center justify-center gap-1.5 py-2 rounded-lg bg-brand-500 text-white text-xs font-semibold hover:bg-brand-600 transition-colors"
-          >
-            All Products <ArrowRight className="h-3 w-3" />
-          </Link>
-        </div>
-      </div>
-
-      {/* Right — product grid */}
-      <div className="flex-1 p-4">
-        <div className="flex items-center gap-2 mb-3">
-          <CatIcon className="h-4 w-4 text-brand-400" />
-          <span className="text-xs font-semibold text-foreground">{cat.label}</span>
-          <span className="text-[10px] text-muted-foreground">({cat.products.length} products)</span>
-        </div>
-        <div className="grid grid-cols-2 gap-1.5">
-          {cat.products.slice(0, 6).map((p) => {
-            const PIcon = p.icon;
-            return (
-              <Link
-                key={p.slug}
-                to={`/products/${p.slug}`}
-                className="group flex items-start gap-2.5 p-2.5 rounded-lg hover:bg-accent transition-colors duration-150"
-              >
-                <div
-                  className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 mt-0.5"
-                  style={{ backgroundColor: p.iconColor + "22" }}
-                >
-                  <PIcon className="h-3.5 w-3.5" style={{ color: p.iconColor }} />
-                </div>
-                <div className="min-w-0">
-                  <div className="flex items-center gap-1">
-                    <span className="text-xs font-semibold text-foreground group-hover:text-brand-400 transition-colors truncate">
-                      {p.name}
-                    </span>
-                    {p.isNew && (
-                      <span className="px-1 py-0 rounded text-[9px] font-bold bg-brand-500/15 text-brand-400 shrink-0">
-                        NEW
-                      </span>
-                    )}
-                  </div>
-                  <span className="text-[10px] text-muted-foreground line-clamp-1">{p.tagline}</span>
-                </div>
-              </Link>
-            );
-          })}
-        </div>
-        {cat.products.length > 6 && (
-          <Link
-            to={`/products?category=${cat.slug}`}
-            className="mt-2 flex items-center gap-1 text-[10px] text-brand-400 hover:text-brand-300 font-medium"
-          >
-            +{cat.products.length - 6} more in {cat.label} <ArrowRight className="h-3 w-3" />
-          </Link>
-        )}
-      </div>
-    </div>
-  );
-}
-
-// ─── Services mega-menu ────────────────────────────────────────────────────────
+// ─── Services mega-menu ───────────────────────────────────────────────────────
 
 function ServicesMegaMenu() {
   return (
@@ -121,7 +24,8 @@ function ServicesMegaMenu() {
           { label: "Research & Innovation", href: "/services" },
           { label: "Alliances",             href: "/services" },
         ].map((item) => (
-          <Link key={item.label} to={item.href} className="block px-2 py-1.5 text-sm rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent transition-colors">
+          <Link key={item.label} to={item.href}
+            className="block px-2 py-1.5 text-sm rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent transition-colors">
             {item.label}
           </Link>
         ))}
@@ -131,41 +35,86 @@ function ServicesMegaMenu() {
           Industries
         </p>
         {[
-          { label: "Banking",             href: "/services/banking" },
-          { label: "Capital Markets",     href: "/services/capital-markets" },
-          { label: "Healthcare",          href: "/services/healthcare" },
-          { label: "High Tech",           href: "/services/high-tech" },
-          { label: "Manufacturing",       href: "/services/manufacturing" },
-          { label: "Retail",              href: "/services/retail" },
-          { label: "Travel & Logistics",  href: "/services/travel-logistics" },
+          { label: "Banking",            href: "/services" },
+          { label: "Capital Markets",    href: "/services" },
+          { label: "Healthcare",         href: "/services" },
+          { label: "High Tech",          href: "/services" },
+          { label: "Manufacturing",      href: "/services" },
+          { label: "Retail",             href: "/services" },
+          { label: "Travel & Logistics", href: "/services" },
         ].map((item) => (
-          <Link key={item.label} to={item.href} className="block px-2 py-1.5 text-sm rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent transition-colors">
+          <Link key={item.label} to={item.href}
+            className="block px-2 py-1.5 text-sm rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent transition-colors">
             {item.label}
           </Link>
         ))}
         <Link to="/services" className="mt-1 block px-2 py-1.5 text-sm rounded-lg text-brand-400 hover:text-brand-300 font-medium">
-          View all industries →
+          View all →
         </Link>
       </div>
     </div>
   );
 }
 
-// ─── Navbar ────────────────────────────────────────────────────────────────────
+// ─── Navbar ───────────────────────────────────────────────────────────────────
+
+function UserMenu({ user, logout }: { user: { first_name?: string; email?: string; role?: string } | null; logout: () => void }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false); };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  const initial = (user?.first_name?.[0] || user?.email?.[0] || "?").toUpperCase();
+  const canAccessDashboard = user?.role === "admin" || user?.role === "editor";
+
+  return (
+    <div ref={ref} className="relative">
+      <button onClick={() => setOpen((v) => !v)}
+        className="w-8 h-8 rounded-full bg-gradient-to-br from-brand-500 to-cyan-500 flex items-center justify-center text-white text-xs font-bold hover:opacity-90 transition-opacity">
+        {initial}
+      </button>
+      <AnimatePresence>
+        {open && (
+          <motion.div initial={{ opacity: 0, y: 6, scale: 0.97 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 6, scale: 0.97 }}
+            className="absolute right-0 top-full mt-2 w-44 bg-card border border-border rounded-2xl shadow-2xl z-50 overflow-hidden py-1">
+            <div className="px-3 py-2 border-b border-border mb-1">
+              <p className="text-xs font-semibold text-foreground truncate">{user?.first_name || user?.email}</p>
+              <p className="text-[11px] text-muted-foreground capitalize">{user?.role}</p>
+            </div>
+            <Link to={canAccessDashboard ? "/dashboard" : "/my-account"} onClick={() => setOpen(false)}
+              className="flex items-center gap-2 px-3 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-accent transition-colors">
+              <LayoutDashboard className="h-3.5 w-3.5" />
+              {canAccessDashboard ? "Dashboard" : "My Account"}
+            </Link>
+            <button onClick={() => { setOpen(false); logout(); }}
+              className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors">
+              <LogOut className="h-3.5 w-3.5" /> Sign Out
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [scrolled, setScrolled] = useState(false);
   const { theme, setTheme } = useThemeStore();
-  const { user, isAuthenticated } = useAuthStore();
+  const { user, isAuthenticated, logout } = useAuthStore();
   const { t } = useTranslation();
   const location = useLocation();
 
-  const simpleLinks = [
+  // Unified nav links — no separate Products concept
+  const navLinks = [
     { label: t("nav.home"),     href: "/" },
     { label: t("nav.about"),    href: "/about" },
-    { label: t("nav.projects"), href: "/projects" },
+    { label: "Our Work",        href: "/projects" },
     { label: t("nav.blog"),     href: "/blog" },
     { label: t("nav.careers"),  href: "/careers" },
     { label: t("nav.contact"),  href: "/contact" },
@@ -181,12 +130,19 @@ export function Navbar() {
 
   const toggleTheme = () => setTheme(theme === "dark" ? "light" : "dark");
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handler = () => setActiveDropdown(null);
     document.addEventListener("click", handler);
     return () => document.removeEventListener("click", handler);
   }, []);
+
+  const linkCls = (href: string) =>
+    cn(
+      "px-3 py-2 rounded-lg text-sm font-medium transition-colors",
+      (href === "/" ? location.pathname === href : location.pathname.startsWith(href))
+        ? "text-foreground bg-accent"
+        : "text-muted-foreground hover:text-foreground hover:bg-accent"
+    );
 
   return (
     <motion.nav
@@ -218,55 +174,8 @@ export function Navbar() {
           <div className="hidden lg:flex items-center gap-0.5" onClick={(e) => e.stopPropagation()}>
 
             {/* Home + About */}
-            {["home", "about"].map((key) => {
-              const link = simpleLinks.find((l) => l.label === t(`nav.${key}`))!;
-              return (
-                <Link
-                  key={key}
-                  to={link.href}
-                  className={cn(
-                    "px-3 py-2 rounded-lg text-sm font-medium transition-colors",
-                    location.pathname === link.href
-                      ? "text-foreground bg-accent"
-                      : "text-muted-foreground hover:text-foreground hover:bg-accent"
-                  )}
-                >
-                  {link.label}
-                </Link>
-              );
-            })}
-
-            {/* Products dropdown */}
-            <div
-              className="relative"
-              onMouseEnter={() => setActiveDropdown("products")}
-              onMouseLeave={() => setActiveDropdown(null)}
-            >
-              <button className={cn(
-                "flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
-                activeDropdown === "products"
-                  ? "text-foreground bg-accent"
-                  : "text-muted-foreground hover:text-foreground hover:bg-accent"
-              )}>
-                <Sparkles className="h-3.5 w-3.5 text-brand-400" />
-                Products
-                <ChevronDown className={cn("h-3.5 w-3.5 transition-transform duration-200", activeDropdown === "products" && "rotate-180")} />
-              </button>
-              <AnimatePresence>
-                {activeDropdown === "products" && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 8, scale: 0.97 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: 8, scale: 0.97 }}
-                    transition={{ duration: 0.14 }}
-                    className="absolute top-full left-0 mt-2 w-[620px] glass dark:glass-dark rounded-2xl shadow-2xl border border-border overflow-hidden"
-                    style={{ maxHeight: "80vh", overflowY: "auto" }}
-                  >
-                    <ProductsMegaMenu />
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
+            <Link to="/"      className={linkCls("/")}      >{t("nav.home")}</Link>
+            <Link to="/about" className={linkCls("/about")}  >{t("nav.about")}</Link>
 
             {/* Services dropdown */}
             <div
@@ -276,7 +185,7 @@ export function Navbar() {
             >
               <button className={cn(
                 "flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
-                activeDropdown === "services"
+                activeDropdown === "services" || location.pathname.startsWith("/services")
                   ? "text-foreground bg-accent"
                   : "text-muted-foreground hover:text-foreground hover:bg-accent"
               )}>
@@ -298,21 +207,9 @@ export function Navbar() {
               </AnimatePresence>
             </div>
 
-            {/* Simple links */}
-            {simpleLinks.filter((l) => !["nav.home", "nav.about"].includes(
-              Object.entries({ "nav.home": t("nav.home"), "nav.about": t("nav.about") })
-                .find(([, v]) => v === l.label)?.[0] ?? ""
-            )).map((link) => (
-              <Link
-                key={link.href}
-                to={link.href}
-                className={cn(
-                  "px-3 py-2 rounded-lg text-sm font-medium transition-colors",
-                  location.pathname === link.href
-                    ? "text-foreground bg-accent"
-                    : "text-muted-foreground hover:text-foreground hover:bg-accent"
-                )}
-              >
+            {/* Our Work + remaining links */}
+            {navLinks.filter((l) => !["/" , "/about"].includes(l.href)).map((link) => (
+              <Link key={link.href} to={link.href} className={linkCls(link.href)}>
                 {link.label}
               </Link>
             ))}
@@ -330,11 +227,7 @@ export function Navbar() {
             </button>
 
             {isAuthenticated ? (
-              <Link to="/dashboard">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-brand-500 to-cyan-500 flex items-center justify-center text-white text-xs font-bold">
-                  {user?.first_name?.[0] || user?.email?.[0]?.toUpperCase()}
-                </div>
-              </Link>
+              <UserMenu user={user} logout={logout} />
             ) : (
               <div className="hidden lg:flex items-center gap-2">
                 <Link to="/login">
@@ -367,16 +260,23 @@ export function Navbar() {
             className="lg:hidden bg-background/95 backdrop-blur-xl border-b border-border overflow-hidden"
           >
             <div className="container mx-auto px-4 py-4 flex flex-col gap-1">
-              <Link to="/" className={cn("px-4 py-3 rounded-lg text-sm font-medium", location.pathname === "/" ? "bg-accent text-foreground" : "text-muted-foreground hover:bg-accent hover:text-foreground")}>
-                {t("nav.home")}
+              {navLinks.map((link) => (
+                <Link
+                  key={link.href}
+                  to={link.href}
+                  className={cn(
+                    "px-4 py-3 rounded-lg text-sm font-medium",
+                    (link.href === "/" ? location.pathname === link.href : location.pathname.startsWith(link.href))
+                      ? "bg-accent text-foreground"
+                      : "text-muted-foreground hover:bg-accent hover:text-foreground"
+                  )}
+                >
+                  {link.label}
+                </Link>
+              ))}
+              <Link to="/services" className="px-4 py-3 rounded-lg text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground">
+                {t("nav.services")}
               </Link>
-              <Link to="/about" className="px-4 py-3 rounded-lg text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground">{t("nav.about")}</Link>
-              <Link to="/products" className="px-4 py-3 rounded-lg text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground">Products</Link>
-              <Link to="/services" className="px-4 py-3 rounded-lg text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground">{t("nav.services")}</Link>
-              <Link to="/projects" className="px-4 py-3 rounded-lg text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground">{t("nav.projects")}</Link>
-              <Link to="/blog" className="px-4 py-3 rounded-lg text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground">{t("nav.blog")}</Link>
-              <Link to="/careers" className="px-4 py-3 rounded-lg text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground">{t("nav.careers")}</Link>
-              <Link to="/contact" className="px-4 py-3 rounded-lg text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground">{t("nav.contact")}</Link>
               <div className="mt-4 flex flex-col gap-2">
                 <LanguageSwitcher variant="pills" />
                 <Link to="/login"><Button variant="outline" className="w-full">{t("nav.login")}</Button></Link>

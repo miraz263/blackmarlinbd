@@ -15,10 +15,11 @@ export default function BlogPage() {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [page, setPage] = useState(1);
 
-  const { data: categories } = useQuery({
+  const { data: categoriesData } = useQuery({
     queryKey: ["blog-categories"],
-    queryFn: () => blogApi.categories.list().then((r) => r.data.results),
+    queryFn: () => blogApi.categories.list().then((r) => r.data),
   });
+  const categories = categoriesData?.results;
 
   const { data, isLoading } = useQuery({
     queryKey: ["blog", search, selectedCategory, page],
@@ -99,7 +100,7 @@ export default function BlogPage() {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {data?.results.map((post: BlogPost, i: number) => (
+              {(data?.results ?? []).map((post: BlogPost, i: number) => (
                 <motion.article
                   key={post.id}
                   initial={{ opacity: 0, y: 30 }}

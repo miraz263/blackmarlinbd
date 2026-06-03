@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.http import HttpResponseRedirect
 from django.urls import path, reverse
 
-from .models import AboutPage, Mission, Vision, CoreValue, TeamMember
+from .models import AboutPage, Mission, Vision, CoreValue, TeamMember, AboutStatistic
 
 
 class SingletonModelAdmin(admin.ModelAdmin):
@@ -75,6 +75,13 @@ class CoreValueAdmin(admin.ModelAdmin):
     fieldsets = (
         (None, {"fields": ("title", "description", "icon_name", "order", "is_published")}),
     )
+
+
+@admin.register(AboutStatistic)
+class AboutStatisticAdmin(admin.ModelAdmin):
+    list_display = ("value", "label", "icon_name", "order", "is_published")
+    list_editable = ("order", "is_published")
+    ordering = ("order",)
 
 
 @admin.register(TeamMember)

@@ -35,17 +35,22 @@ export const useAuthStore = create<AuthState>()(
           await authApi.logout();
         } finally {
           set({ user: null, isAuthenticated: false });
+          // Wipe persisted storage so fetchMe on next load doesn't restore session
+          localStorage.removeItem("auth-storage");
         }
       },
 
       fetchMe: async () => {
+        // Skip if we just logged out (no persisted user)
         if (get().isLoading) return;
         set({ isLoading: true });
         try {
           const { data } = await authApi.getMe();
           set({ user: data, isAuthenticated: true });
         } catch {
+          // Cookie invalid or expired — wipe any stale persisted state
           set({ user: null, isAuthenticated: false });
+          localStorage.removeItem("auth-storage");
         } finally {
           set({ isLoading: false });
         }

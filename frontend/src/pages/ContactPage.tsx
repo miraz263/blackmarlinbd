@@ -2,11 +2,13 @@ import { useState } from "react";
 import { SEOHead } from "@/components/seo/SEOHead";
 import { motion } from "framer-motion";
 import { useForm } from "react-hook-form";
+import { useQuery } from "@tanstack/react-query";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Mail, Phone, MapPin, Send, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { contactsApi } from "@/services/api/contacts";
+import { siteSettingsService, siteSettingsKeys } from "@/services/siteSettingsService";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { ContactFormData } from "@/types";
 
@@ -38,15 +40,31 @@ const budgets = [
   "$500k+",
 ];
 
-const CONTACT_INFO_KEYS = [
-  { icon: Mail,   labelKey: "contact.info_email",   value: "hello@blackmarlinbd.com" },
-  { icon: Phone,  labelKey: "contact.info_phone",   value: "+1 (555) 000-0000" },
-  { icon: MapPin, labelKey: "contact.info_offices", value: "Dhaka · New York · London" },
-];
-
 export default function ContactPage() {
   const { t } = useTranslation();
   const [submitted, setSubmitted] = useState(false);
+
+  const { data: site } = useQuery({
+    queryKey: siteSettingsKeys.site,
+    queryFn: () => siteSettingsService.getSiteSettings().then((r) => r.data),
+    staleTime: 10 * 60 * 1000,
+  });
+  const { data: contactCfg } = useQuery({
+    queryKey: siteSettingsKeys.contact,
+    queryFn: () => siteSettingsService.getContactSettings().then((r) => r.data),
+    staleTime: 10 * 60 * 1000,
+  });
+
+  const pageTitle       = contactCfg?.page_title       || t("contact.title");
+  const pageSubtitle    = contactCfg?.page_subtitle     || t("contact.subtitle");
+  const responseText    = contactCfg?.response_time_text || t("contact.response_time");
+  const responseDesc    = contactCfg?.response_time_desc || t("contact.response_desc");
+
+  const contactInfoRows = [
+    { icon: Mail,   labelKey: "contact.info_email",   value: site?.email   || "hello@blackmarlinbd.com" },
+    { icon: Phone,  labelKey: "contact.info_phone",   value: site?.phone   || "+1 (555) 000-0000" },
+    { icon: MapPin, labelKey: "contact.info_offices", value: site?.address || "Dhaka · New York · London" },
+  ];
   const {
     register,
     handleSubmit,
@@ -77,17 +95,17 @@ export default function ContactPage() {
             className="text-center mb-16"
           >
             <h1 className="text-5xl font-bold mb-4">
-              <span className="gradient-text">{t("contact.title")}</span>
+              <span className="gradient-text">{pageTitle}</span>
             </h1>
             <p className="text-muted-foreground max-w-xl mx-auto">
-              {t("contact.subtitle")}
+              {pageSubtitle}
             </p>
           </motion.div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 max-w-6xl mx-auto">
             {/* Contact Info */}
             <div className="space-y-8">
-              {CONTACT_INFO_KEYS.map(({ icon: Icon, labelKey, value }) => (
+              {contactInfoRows.map(({ icon: Icon, labelKey, value }) => (
                 <motion.div
                   key={labelKey}
                   initial={{ opacity: 0, x: -20 }}
@@ -106,10 +124,8 @@ export default function ContactPage() {
 
               {/* Response time */}
               <div className="p-4 rounded-xl bg-brand-500/10 border border-brand-500/20">
-                <p className="text-sm text-brand-400 font-medium">{t("contact.response_time")}</p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {t("contact.response_desc")}
-                </p>
+                <p className="text-sm text-brand-400 font-medium">{responseText}</p>
+                <p className="text-xs text-muted-foreground mt-1">{responseDesc}</p>
               </div>
             </div>
 

@@ -8,6 +8,7 @@ from django.db.models.functions import TruncDate
 from django.http import HttpResponse
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
+from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.views import APIView
 
 from apps.rbac.permissions import rbac_permission
@@ -201,6 +202,8 @@ class CollectView(APIView):
     """SPA client-side tracking endpoint — unauthenticated, low-overhead."""
     permission_classes = [AllowAny]
     authentication_classes = []
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "analytics_collect"
 
     def post(self, request):
         ua = request.META.get("HTTP_USER_AGENT", "")
@@ -245,6 +248,15 @@ class ExportCSVView(APIView):
         )
         pv_map = {row["day"]: row for row in pv_rows}
 
+        blog_rows = (
+            PageView.objects
+            .filter(created_at__date__gte=start, path__startswith="/blog/")
+            .annotate(day=TruncDate("created_at"))
+            .values("day")
+            .annotate(count=Count("id"))
+        )
+        blog_map = {row["day"]: row["count"] for row in blog_rows}
+
         contact_rows = {}
         try:
             from apps.contacts.models import Contact
@@ -279,16 +291,11 @@ class ExportCSVView(APIView):
 
         for d in date_list:
             row = pv_map.get(d, {})
-            blog_views = (
-                PageView.objects
-                .filter(created_at__date=d, path__startswith="/blog/")
-                .count()
-            )
             writer.writerow([
                 d.strftime("%Y-%m-%d"),
                 row.get("views", 0),
                 row.get("unique", 0),
-                blog_views,
+                blog_map.get(d, 0),
                 contact_rows.get(d, 0),
                 job_rows.get(d, 0),
             ])

@@ -11,11 +11,13 @@ export const blogApi = {
 
   create: (data: FormData) =>
     apiClient.post<BlogPost>("/blog/", data, {
-      headers: { "Content-Type": "multipart/form-data" },
+      headers: { "Content-Type": undefined },
     }),
 
-  update: (slug: string, data: Partial<BlogPost>) =>
-    apiClient.patch<BlogPost>(`/blog/${slug}/`, data),
+  update: (slug: string, data: FormData) =>
+    apiClient.patch<BlogPost>(`/blog/${slug}/`, data, {
+      headers: { "Content-Type": undefined },
+    }),
 
   delete: (slug: string) => apiClient.delete(`/blog/${slug}/`),
 
@@ -24,5 +26,7 @@ export const blogApi = {
 
   categories: {
     list: () => apiClient.get<PaginatedResponse<BlogCategory>>("/blog/categories/"),
+    create: (data: { name: string; description?: string }) =>
+      apiClient.post<BlogCategory>("/blog/categories/", data),
   },
 };

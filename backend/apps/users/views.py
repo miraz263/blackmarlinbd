@@ -10,6 +10,7 @@ from .serializers import (
     UserRegistrationSerializer,
     UserSerializer,
     UserUpdateSerializer,
+    AdminUserSerializer,
     ChangePasswordSerializer,
     NewsletterSerializer,
 )
@@ -46,8 +47,23 @@ def _set_auth_cookies(response, access_token, refresh_token):
 
 
 def _clear_auth_cookies(response):
-    response.delete_cookie(JWT_SETTINGS["AUTH_COOKIE"])
-    response.delete_cookie(JWT_SETTINGS["AUTH_COOKIE_REFRESH"])
+    secure = JWT_SETTINGS.get("AUTH_COOKIE_SECURE", True)
+    samesite = JWT_SETTINGS.get("AUTH_COOKIE_SAMESITE", "Lax")
+    # Explicitly expire with matching attributes so every browser honours the deletion
+    cookie_paths = {
+        JWT_SETTINGS["AUTH_COOKIE"]: "/",
+        JWT_SETTINGS["AUTH_COOKIE_REFRESH"]: "/api/v1/auth/token/refresh/",
+    }
+    for key, path in cookie_paths.items():
+        response.set_cookie(
+            key=key,
+            value="",
+            max_age=0,
+            path=path,
+            httponly=True,
+            secure=secure,
+            samesite=samesite,
+        )
 
 
 class RegisterView(generics.CreateAPIView):
@@ -171,8 +187,22 @@ class NewsletterSubscribeView(generics.CreateAPIView):
 
 class UserListView(generics.ListAPIView):
     """Admin-only user list."""
-    serializer_class = UserSerializer
+    serializer_class = AdminUserSerializer
     permission_classes = [permissions.IsAdminUser]
     queryset = User.objects.all().order_by("-date_joined")
     search_fields = ["email", "username", "first_name", "last_name"]
     filterset_fields = ["role", "is_active"]
+
+
+class UserDetailView(generics.RetrieveUpdateDestroyAPIView):
+    """Admin-only: view, update role/status, or delete a user."""
+    serializer_class = AdminUserSerializer
+    permission_classes = [permissions.IsAdminUser]
+    queryset = User.objects.all()
+
+    def destroy(self, request, *args, **kwargs):
+        user = self.get_object()
+        if user == request.user:
+            return Response({"detail": "You cannot delete your own account."}, status=status.HTTP_400_BAD_REQUEST)
+        user.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)

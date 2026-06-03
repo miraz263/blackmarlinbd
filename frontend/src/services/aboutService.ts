@@ -6,6 +6,7 @@ import type {
   Vision,
   CoreValue,
   TeamMember,
+  AboutStatistic,
   ReorderItem,
 } from "@/types";
 
@@ -13,6 +14,7 @@ export const aboutKeys = {
   all: ["about"] as const,
   team: ["about", "team"] as const,
   values: ["about", "values"] as const,
+  statistics: ["about", "statistics"] as const,
   mission: ["about", "mission"] as const,
   vision: ["about", "vision"] as const,
 };
@@ -54,6 +56,16 @@ export const aboutService = {
   deleteValue: (id: number) => apiClient.delete(`/about/values/${id}/`),
   reorderValues: (items: ReorderItem[]) =>
     apiClient.post("/about/values/reorder/", items),
+
+  // ── Statistics CRUD (admin) ──────────────────────────────────────────────
+  getStatistics: () => apiClient.get<{ results: AboutStatistic[] }>("/about/statistics/"),
+  createStatistic: (data: Omit<AboutStatistic, "id">) =>
+    apiClient.post<AboutStatistic>("/about/statistics/", data),
+  updateStatistic: (id: number, data: Partial<AboutStatistic>) =>
+    apiClient.patch<AboutStatistic>(`/about/statistics/${id}/`, data),
+  deleteStatistic: (id: number) => apiClient.delete(`/about/statistics/${id}/`),
+  reorderStatistics: (items: ReorderItem[]) =>
+    apiClient.post("/about/statistics/reorder/", items),
 };
 
 export const aboutQueryOptions = {

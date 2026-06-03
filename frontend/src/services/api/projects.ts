@@ -11,11 +11,14 @@ export const projectsApi = {
 
   create: (data: FormData) =>
     apiClient.post<Project>("/projects/", data, {
-      headers: { "Content-Type": "multipart/form-data" },
+      // undefined removes the default application/json so axios sets multipart+boundary
+      headers: { "Content-Type": undefined },
     }),
 
   update: (slug: string, data: FormData | Partial<Project>) =>
-    apiClient.patch<Project>(`/projects/${slug}/`, data),
+    apiClient.patch<Project>(`/projects/${slug}/`, data, {
+      headers: data instanceof FormData ? { "Content-Type": undefined } : {},
+    }),
 
   delete: (slug: string) => apiClient.delete(`/projects/${slug}/`),
 

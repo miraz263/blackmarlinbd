@@ -4,13 +4,14 @@ from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import AboutPage, Mission, Vision, CoreValue, TeamMember
+from .models import AboutPage, Mission, Vision, CoreValue, TeamMember, AboutStatistic
 from .serializers import (
     AboutPageSerializer,
     MissionSerializer,
     VisionSerializer,
     CoreValueSerializer,
     TeamMemberSerializer,
+    AboutStatisticSerializer,
     ReorderSerializer,
 )
 
@@ -29,6 +30,10 @@ class AboutAggregateView(APIView):
                 "page": AboutPageSerializer(AboutPage.load()).data,
                 "mission": MissionSerializer(Mission.load()).data,
                 "vision": VisionSerializer(Vision.load()).data,
+                "statistics": AboutStatisticSerializer(
+                    AboutStatistic.objects.filter(is_published=True).order_by("order"),
+                    many=True,
+                ).data,
                 "values": CoreValueSerializer(
                     CoreValue.objects.filter(is_published=True).order_by("order"),
                     many=True,
@@ -168,4 +173,38 @@ class TeamReorderView(APIView):
                 TeamMember.objects.filter(pk=item["id"]).update(
                     display_order=item["order"]
                 )
+        return Response({"status": "ok"})
+
+
+# ─── Statistics ─────────────────────────────────────────────────────────────
+
+class StatisticListView(generics.ListCreateAPIView):
+    serializer_class = AboutStatisticSerializer
+    queryset = AboutStatistic.objects.all().order_by("order")
+
+    def get_permissions(self):
+        if self.request.method in permissions.SAFE_METHODS:
+            return [permissions.AllowAny()]
+        return [permissions.IsAdminUser()]
+
+
+class StatisticDetailView(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = AboutStatisticSerializer
+    queryset = AboutStatistic.objects.all()
+
+    def get_permissions(self):
+        if self.request.method in permissions.SAFE_METHODS:
+            return [permissions.AllowAny()]
+        return [permissions.IsAdminUser()]
+
+
+class StatisticReorderView(APIView):
+    permission_classes = [permissions.IsAdminUser]
+
+    def post(self, request):
+        items = ReorderSerializer(data=request.data, many=True)
+        items.is_valid(raise_exception=True)
+        with transaction.atomic():
+            for item in items.validated_data:
+                AboutStatistic.objects.filter(pk=item["id"]).update(order=item["order"])
         return Response({"status": "ok"})

@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard, FolderKanban, FileText, Briefcase,
   Users, Settings, LogOut, ChevronRight, Bell, Image,
-  ShieldCheck, Layers, GitMerge, BarChart2, Languages, Sparkles,
+  ShieldCheck, Layers, GitMerge, BarChart2, Languages, Sparkles, Package2, Info, Home, MessageSquare, Inbox,
 } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuthStore } from "@/store/authStore";
@@ -13,21 +13,33 @@ import { workflowService, workflowKeys } from "@/services/workflowService";
 import { cn } from "@/lib/utils";
 import type { RBACModule, WorkflowNotification } from "@/types";
 
-type NavItem = { label: string; href: string; icon: React.ElementType; module?: RBACModule };
+type NavLink  = { kind?: "link"; label: string; href: string; icon: React.ElementType; module?: RBACModule };
+type NavGroup = { kind: "group"; label: string; icon: React.ElementType; children: NavLink[] };
+type NavEntry = NavLink | NavGroup;
 
-const ALL_NAV: NavItem[] = [
-  { label: "Overview",   href: "/dashboard",            icon: LayoutDashboard },
-  { label: "Analytics",  href: "/dashboard/analytics",  icon: BarChart2,  module: "site_settings" },
-  { label: "AI",         href: "/dashboard/ai",          icon: Sparkles,   module: "site_settings" },
-  { label: "Projects",  href: "/dashboard/projects", icon: FolderKanban,  module: "projects"      },
-  { label: "Blog",      href: "/dashboard/blog",     icon: FileText,       module: "blog"          },
-  { label: "Jobs",      href: "/dashboard/jobs",     icon: Briefcase,      module: "jobs"          },
-  { label: "Media",    href: "/dashboard/media",    icon: Image,     module: "media"         },
-  { label: "Pages",    href: "/dashboard/pages",    icon: Layers,    module: "site_settings" },
-  { label: "Workflow",     href: "/dashboard/workflow",     icon: GitMerge,   module: "site_settings" },
-  { label: "Translations", href: "/dashboard/translations", icon: Languages,  module: "site_settings" },
-  { label: "Users",        href: "/dashboard/users",        icon: Users,      module: "users"         },
-  { label: "Settings", href: "/dashboard/settings", icon: Settings,  module: "site_settings" },
+const ALL_NAV: NavEntry[] = [
+  { label: "Overview",  href: "/dashboard",           icon: LayoutDashboard },
+  { label: "Analytics", href: "/dashboard/analytics", icon: BarChart2,  module: "site_settings" },
+  { label: "AI",        href: "/dashboard/ai",         icon: Sparkles,   module: "site_settings" },
+  {
+    kind: "group", label: "Content", icon: FolderKanban,
+    children: [
+      { label: "Projects", href: "/dashboard/projects", icon: FolderKanban, module: "projects" },
+      { label: "Products", href: "/dashboard/products", icon: Package2,     module: "projects" },
+    ],
+  },
+  { label: "Homepage", href: "/dashboard/homepage", icon: Home,      module: "site_settings" },
+  { label: "About",    href: "/dashboard/about",    icon: Info,      module: "site_settings" },
+  { label: "Inbox",   href: "/dashboard/inbox",   icon: Inbox,         module: "contacts"      },
+  { label: "Contact", href: "/dashboard/contact", icon: MessageSquare, module: "site_settings" },
+  { label: "Blog",    href: "/dashboard/blog",    icon: FileText,      module: "blog"           },
+  { label: "Jobs",  href: "/dashboard/jobs",  icon: Briefcase, module: "jobs"          },
+  { label: "Media", href: "/dashboard/media", icon: Image,     module: "media"         },
+  { label: "Pages", href: "/dashboard/pages", icon: Layers,    module: "site_settings" },
+  { label: "Workflow",     href: "/dashboard/workflow",     icon: GitMerge,  module: "site_settings" },
+  { label: "Translations", href: "/dashboard/translations", icon: Languages, module: "site_settings" },
+  { label: "Users",    href: "/dashboard/users",    icon: Users,       module: "users"         },
+  { label: "Settings", href: "/dashboard/settings", icon: Settings,    module: "site_settings" },
   { label: "Roles",    href: "/dashboard/roles",    icon: ShieldCheck },
 ];
 
@@ -138,13 +150,28 @@ export default function DashboardLayout() {
   const { canView, isSuperAdmin, isLoading: rbacLoading } = useRBAC();
 
   if (!isAuthenticated) return <Navigate to="/login" replace />;
-  if (user && user.role === "viewer") return <Navigate to="/" replace />;
+  if (user && user.role === "viewer") return <Navigate to="/my-account" replace />;
 
-  const navItems = ALL_NAV.filter(({ module, label }) => {
-    if (!module) return true;                  // Overview — always shown
-    if (label === "Roles") return isSuperAdmin; // Roles — superadmin only
-    return rbacLoading || canView(module);      // show while loading, hide if denied
-  });
+  const canShowLink = (item: NavLink) => {
+    if (!item.module) return true;
+    if (item.label === "Roles") return isSuperAdmin;
+    return rbacLoading || canView(item.module);
+  };
+
+  const navItems = ALL_NAV.reduce<NavEntry[]>((acc, entry) => {
+    if (entry.kind === "group") {
+      const visibleChildren = entry.children.filter(canShowLink);
+      if (visibleChildren.length) acc.push({ ...entry, children: visibleChildren });
+    } else {
+      if (canShowLink(entry as NavLink)) acc.push(entry);
+    }
+    return acc;
+  }, []);
+
+  // Flat list of all links (for header title lookup)
+  const allLinks = navItems.flatMap((e) =>
+    e.kind === "group" ? e.children : [e as NavLink]
+  );
 
   return (
     <div className="flex h-screen bg-background overflow-hidden">
@@ -162,15 +189,51 @@ export default function DashboardLayout() {
 
         {/* Nav */}
         <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-          {navItems.map(({ label, href, icon: Icon }) => {
+          {navItems.map((entry) => {
+            if (entry.kind === "group") {
+              const groupActive = entry.children.some((c) =>
+                location.pathname.startsWith(c.href)
+              );
+              return (
+                <div key={entry.label}>
+                  <div className={cn(
+                    "flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold uppercase tracking-widest mt-1",
+                    groupActive ? "text-brand-400" : "text-muted-foreground/60"
+                  )}>
+                    <entry.icon className="h-3.5 w-3.5" />
+                    {entry.label}
+                  </div>
+                  {entry.children.map((child) => {
+                    const isActive = location.pathname.startsWith(child.href);
+                    return (
+                      <Link
+                        key={child.href}
+                        to={child.href}
+                        className={cn(
+                          "flex items-center gap-3 pl-8 pr-3 py-2 rounded-xl text-sm font-medium transition-all duration-200",
+                          isActive
+                            ? "bg-brand-500 text-white shadow-lg shadow-brand-500/30"
+                            : "text-muted-foreground hover:text-foreground hover:bg-accent"
+                        )}
+                      >
+                        <child.icon className="h-4 w-4" />
+                        {child.label}
+                        {isActive && <ChevronRight className="ml-auto h-3.5 w-3.5" />}
+                      </Link>
+                    );
+                  })}
+                </div>
+              );
+            }
+            const link = entry as NavLink;
             const isActive =
-              href === "/dashboard"
-                ? location.pathname === href
-                : location.pathname.startsWith(href);
+              link.href === "/dashboard"
+                ? location.pathname === link.href
+                : location.pathname.startsWith(link.href);
             return (
               <Link
-                key={href}
-                to={href}
+                key={link.href}
+                to={link.href}
                 className={cn(
                   "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200",
                   isActive
@@ -178,8 +241,8 @@ export default function DashboardLayout() {
                     : "text-muted-foreground hover:text-foreground hover:bg-accent"
                 )}
               >
-                <Icon className="h-4 w-4" />
-                {label}
+                <link.icon className="h-4 w-4" />
+                {link.label}
                 {isActive && <ChevronRight className="ml-auto h-3.5 w-3.5" />}
               </Link>
             );
@@ -214,7 +277,7 @@ export default function DashboardLayout() {
         {/* Top bar */}
         <header className="h-16 border-b border-border flex items-center justify-between px-6 flex-shrink-0">
           <h1 className="font-semibold">
-            {navItems.find((n) =>
+            {allLinks.find((n) =>
               n.href === "/dashboard"
                 ? location.pathname === n.href
                 : location.pathname.startsWith(n.href)

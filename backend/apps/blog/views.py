@@ -36,9 +36,7 @@ class BlogPostListView(generics.ListCreateAPIView):
         return BlogPostDetailSerializer
 
     def get_queryset(self):
-        qs = BlogPost.objects.select_related("author", "category").prefetch_related("tags").annotate(
-            comment_count=Count("comments", filter=Count("comments"))
-        )
+        qs = BlogPost.objects.select_related("author", "category").prefetch_related("tags")
         if not (self.request.user.is_authenticated and self.request.user.is_editor):
             qs = qs.filter(status=BlogPost.Status.PUBLISHED, published_at__lte=timezone.now())
         return qs

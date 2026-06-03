@@ -47,6 +47,7 @@ THIRD_PARTY_APPS = [
 LOCAL_APPS = [
     "apps.users",
     "apps.projects",
+    "apps.products",
     "apps.blog",
     "apps.contacts",
     "apps.jobs",
@@ -176,6 +177,7 @@ REST_FRAMEWORK = {
         "anon": "100/hour",
         "user": "1000/hour",
         "contact": "5/hour",
+        "analytics_collect": "60/minute",
     },
 }
 

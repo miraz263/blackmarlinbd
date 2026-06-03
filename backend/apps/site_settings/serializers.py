@@ -75,6 +75,10 @@ class ContactSettingsSerializer(serializers.ModelSerializer):
         model = ContactSettings
         fields = [
             "id",
+            "page_title",
+            "page_subtitle",
+            "response_time_text",
+            "response_time_desc",
             "office_hours",
             "support_email",
             "sales_email",

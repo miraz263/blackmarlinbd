@@ -56,6 +56,16 @@ class ChangePasswordSerializer(serializers.Serializer):
         return attrs
 
 
+class AdminUserSerializer(serializers.ModelSerializer):
+    """Admin can update role and active status."""
+    class Meta:
+        model = User
+        fields = ("id", "username", "email", "first_name", "last_name",
+                  "avatar", "bio", "role", "is_active",
+                  "is_newsletter_subscribed", "date_joined", "last_login")
+        read_only_fields = ("id", "email", "username", "date_joined", "last_login")
+
+
 class NewsletterSerializer(serializers.ModelSerializer):
     class Meta:
         model = NewsletterSubscriber

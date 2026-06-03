@@ -2,7 +2,7 @@ import { useState, useRef, useCallback, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Plus, Search, Pencil, Trash2, ExternalLink, Github,
+  Plus, Search, Pencil, Trash2, ExternalLink, Code2,
   Star, StarOff, Eye, X, Upload, Loader2, ChevronLeft,
   ChevronRight, FolderKanban,
   CheckCircle2, Clock, Archive, AlertTriangle,
@@ -205,14 +205,17 @@ function ProjectModal({
     fd.append("short_description", form.short_description);
     fd.append("description", form.description);
     if (form.category_id !== "") fd.append("category_id", String(form.category_id));
-    fd.append("demo_url", form.demo_url);
-    fd.append("github_url", form.github_url);
-    fd.append("case_study_url", form.case_study_url);
+    // URLField and DateField reject empty strings — only send when non-empty
+    if (form.demo_url)        fd.append("demo_url", form.demo_url);
+    if (form.github_url)      fd.append("github_url", form.github_url);
+    if (form.case_study_url)  fd.append("case_study_url", form.case_study_url);
     fd.append("client_name", form.client_name);
-    fd.append("completion_date", form.completion_date);
+    if (form.completion_date) fd.append("completion_date", form.completion_date);
     fd.append("is_featured", String(form.is_featured));
     fd.append("status", form.status);
-    form.tech_stack.forEach((t) => fd.append("tech_stack", t));
+    // JSONField needs JSON-encoded string in multipart (backend uses binary=True)
+    fd.append("tech_stack", JSON.stringify(form.tech_stack));
+    // TagListSerializerField.get_value uses getlist() — send one entry per tag
     form.tags.forEach((t) => fd.append("tags", t));
     if (thumbnail) fd.append("thumbnail", thumbnail);
     return fd;
@@ -230,8 +233,23 @@ function ProjectModal({
       onClose();
     },
     onError: (err: unknown) => {
-      const msg = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail;
-      setError(msg ?? "Failed to save project.");
+      const data = (err as { response?: { data?: unknown } })?.response?.data;
+      // Django debug HTML page — don't iterate characters
+      if (typeof data === "string") {
+        setError("Server error — check backend logs.");
+        return;
+      }
+      if (data && typeof data === "object") {
+        const obj = data as Record<string, unknown>;
+        if (typeof obj.detail === "string") { setError(obj.detail); return; }
+        // DRF field-level errors: { field: ["msg", ...] }
+        const first = Object.entries(obj)
+          .map(([k, v]) => `${k}: ${Array.isArray(v) ? v[0] : v}`)
+          .join(" · ");
+        setError(first || "Failed to save project.");
+      } else {
+        setError("Failed to save project.");
+      }
     },
   });
 
@@ -292,7 +310,7 @@ function ProjectModal({
           <div className="grid grid-cols-2 gap-4">
             <Field label="Category">
               <select value={form.category_id} onChange={(e) => set("category_id", e.target.value === "" ? "" : Number(e.target.value))}
-                className={inputCls}>
+                style={{ colorScheme: "dark" }} className={inputCls}>
                 <option value="">— None —</option>
                 {categories.map((c) => (
                   <option key={c.id} value={c.id}>{c.name}</option>
@@ -301,7 +319,7 @@ function ProjectModal({
             </Field>
             <Field label="Status">
               <select value={form.status} onChange={(e) => set("status", e.target.value as Project["status"])}
-                className={inputCls}>
+                style={{ colorScheme: "dark" }} className={inputCls}>
                 <option value="draft">Draft</option>
                 <option value="published">Published</option>
                 <option value="archived">Archived</option>
@@ -560,7 +578,7 @@ function ProjectRow({
           {project.github_url && (
             <a href={project.github_url} target="_blank" rel="noreferrer"
               className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-accent text-muted-foreground hover:text-foreground transition-colors">
-              <Github className="h-3.5 w-3.5" />
+              <Code2 className="h-3.5 w-3.5" />
             </a>
           )}
           <button onClick={onEdit}
@@ -713,7 +731,8 @@ export default function ProjectsManagerPage() {
           <select
             value={categoryFilter}
             onChange={(e) => setCategoryFilter(e.target.value === "" ? "" : Number(e.target.value))}
-            className="px-3 py-2 rounded-xl bg-card border border-border text-sm outline-none focus:border-brand-500/50 min-w-40"
+            style={{ colorScheme: "dark" }}
+            className="px-3 py-2 rounded-xl bg-card border border-border text-sm text-foreground outline-none focus:border-brand-500/50 min-w-40"
           >
             <option value="">All Categories</option>
             {categories.map((c) => (

@@ -113,6 +113,28 @@ class CoreValue(TimeStampedModel):
         return self.title
 
 
+# ─── About Statistic ───────────────────────────────────────────────────────
+
+class AboutStatistic(TimeStampedModel):
+    icon_name = models.CharField(
+        max_length=50, default="Code2",
+        help_text="Lucide icon name (PascalCase), e.g. Code2, Globe2, Users, Award",
+    )
+    value = models.CharField(max_length=50, help_text='Display value, e.g. "1M+" or "120+"')
+    label = models.CharField(max_length=100, help_text='Label below the value, e.g. "Lines of Production Code"')
+    order = models.PositiveIntegerField(default=0, db_index=True)
+    is_published = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = "about_statistics"
+        ordering = ["order"]
+        verbose_name = "Statistic"
+        verbose_name_plural = "Statistics"
+
+    def __str__(self):
+        return f"{self.value} – {self.label}"
+
+
 # ─── Team Member ───────────────────────────────────────────────────────────
 
 class TeamMember(TimeStampedModel):

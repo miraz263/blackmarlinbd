@@ -66,6 +66,12 @@ ROLE_MATRIX = {
         "media":         {"view", "create"},
         "contacts":      {"view"},
     },
+
+    "blog-writer": {
+        "blog":     {"view", "create", "edit"},
+        "contacts": {"view"},
+        "media":    {"view", "create"},
+    },
 }
 
 ROLE_META = {
@@ -74,6 +80,7 @@ ROLE_META = {
     "marketing-manager": ("Marketing Manager", "Manages blog, services, homepage, and SEO content."),
     "content-editor":    ("Content Editor",    "Creates and publishes blog posts, projects, and media."),
     "project-manager":   ("Project Manager",   "Owns projects and service pages."),
+    "blog-writer":       ("Blog Writer",       "Writes and edits blog posts and can view the contact inbox."),
 }
 
 
