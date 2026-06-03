@@ -232,6 +232,7 @@
   "services_page.clear_filters": "مسح الفلاتر",
   "services_page.no_match": "لا توجد خدمات تطابق بحثك.",
   "services_page.no_match_hint": "جرب كلمة مختلفة أو امسح الفلاتر.",
+  "services_page.browsing_category": "الفئة",
 
   "blog.page_title": "رؤى هندسية",
   "blog.page_subtitle": "تحليلات معمقة ودروس تعليمية من فريق المهندسين والمعماريين لدينا.",

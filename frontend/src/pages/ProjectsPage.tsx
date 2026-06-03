@@ -106,7 +106,7 @@ function PortfolioTab() {
                   <h3 className="font-semibold mb-1">{project.title}</h3>
                   <p className="text-sm text-muted-foreground line-clamp-2 mb-4">{project.short_description}</p>
                   <div className="flex flex-wrap gap-1 mb-3">
-                    {project.tech_stack.slice(0, 3).map((tech) => (
+                    {(Array.isArray(project.tech_stack) ? project.tech_stack : []).slice(0, 3).map((tech) => (
                       <span key={tech} className="px-2 py-0.5 rounded text-xs bg-accent text-accent-foreground">{tech}</span>
                     ))}
                   </div>

@@ -232,6 +232,7 @@
   "services_page.clear_filters": "ফিল্টার মুছুন",
   "services_page.no_match": "আপনার অনুসন্ধানে কোনো সেবা পাওয়া যায়নি।",
   "services_page.no_match_hint": "ভিন্ন কীওয়ার্ড ব্যবহার করুন বা ফিল্টার পরিষ্কার করুন।",
+  "services_page.browsing_category": "বিভাগ",
 
   "blog.page_title": "ইঞ্জিনিয়ারিং অন্তর্দৃষ্টি",
   "blog.page_subtitle": "আমাদের ইঞ্জিনিয়ার ও আর্কিটেক্টদের কাছ থেকে গভীর বিশ্লেষণ ও টিউটোরিয়াল।",

@@ -232,6 +232,7 @@
   "services_page.clear_filters": "Effacer les filtres",
   "services_page.no_match": "Aucun service ne correspond à votre recherche.",
   "services_page.no_match_hint": "Essayez un autre mot-clé ou effacez les filtres.",
+  "services_page.browsing_category": "Catégorie",
 
   "blog.page_title": "Perspectives Techniques",
   "blog.page_subtitle": "Analyses approfondies, tutoriels et perspectives de notre équipe d'ingénieurs.",

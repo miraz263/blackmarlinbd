@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, Moon, Sun, ChevronDown, LayoutDashboard, LogOut } from "lucide-react";
+import { Menu, X, Moon, Sun, ChevronDown, LayoutDashboard, LogOut, PenLine } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LanguageSwitcher } from "@/components/ui/LanguageSwitcher";
 import { useThemeStore } from "@/store/themeStore";
@@ -19,10 +19,10 @@ function ServicesMegaMenu() {
           By Category
         </p>
         {[
-          { label: "Industry Solutions",    href: "/services" },
-          { label: "Products & Platforms",  href: "/services" },
-          { label: "Research & Innovation", href: "/services" },
-          { label: "Alliances",             href: "/services" },
+          { label: "Industry Solutions",    href: "/services?category=industry-solutions" },
+          { label: "Products & Platforms",  href: "/services?category=products-platforms" },
+          { label: "Research & Innovation", href: "/services?category=research-innovation" },
+          { label: "Alliances",             href: "/services?category=alliances" },
         ].map((item) => (
           <Link key={item.label} to={item.href}
             className="block px-2 py-1.5 text-sm rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent transition-colors">
@@ -35,13 +35,13 @@ function ServicesMegaMenu() {
           Industries
         </p>
         {[
-          { label: "Banking",            href: "/services" },
-          { label: "Capital Markets",    href: "/services" },
-          { label: "Healthcare",         href: "/services" },
-          { label: "High Tech",          href: "/services" },
-          { label: "Manufacturing",      href: "/services" },
-          { label: "Retail",             href: "/services" },
-          { label: "Travel & Logistics", href: "/services" },
+          { label: "Banking",            href: "/services/banking" },
+          { label: "Capital Markets",    href: "/services/capital-markets" },
+          { label: "Healthcare",         href: "/services/healthcare" },
+          { label: "High Tech",          href: "/services/high-tech" },
+          { label: "Manufacturing",      href: "/services/manufacturing" },
+          { label: "Retail",             href: "/services/retail" },
+          { label: "Travel & Logistics", href: "/services/travel-logistics" },
         ].map((item) => (
           <Link key={item.label} to={item.href}
             className="block px-2 py-1.5 text-sm rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent transition-colors">
@@ -90,6 +90,12 @@ function UserMenu({ user, logout }: { user: { first_name?: string; email?: strin
               <LayoutDashboard className="h-3.5 w-3.5" />
               {canAccessDashboard ? "Dashboard" : "My Account"}
             </Link>
+            {canAccessDashboard && (
+              <Link to="/blog/write" onClick={() => setOpen(false)}
+                className="flex items-center gap-2 px-3 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-accent transition-colors">
+                <PenLine className="h-3.5 w-3.5" /> Write a Post
+              </Link>
+            )}
             <button onClick={() => { setOpen(false); logout(); }}
               className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors">
               <LogOut className="h-3.5 w-3.5" /> Sign Out

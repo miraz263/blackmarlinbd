@@ -4,7 +4,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Save, Plus, Trash2, Pencil, X, Loader2,
   Home, BarChart2, MousePointerClick, GripVertical,
+  Upload, Image as ImageIcon,
 } from "lucide-react";
+import { useRef } from "react";
 import { homepageService, homepageKeys } from "@/services/homepageService";
 import type { HeroSection, HeroButton, StatisticCard } from "@/types";
 import { cn } from "@/lib/utils";
@@ -52,8 +54,12 @@ function Skeleton() {
 // ─── Tab: Hero ────────────────────────────────────────────────────────────────
 
 function HeroTab() {
-  const qc = useQueryClient();
-  const [toast, setToast] = useState(false);
+  const qc      = useQueryClient();
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [toast,       setToast]       = useState(false);
+  const [imageFile,   setImageFile]   = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [removeImage, setRemoveImage] = useState(false);
 
   const { data: raw, isLoading } = useQuery({
     queryKey: homepageKeys.all,
@@ -61,7 +67,9 @@ function HeroTab() {
     staleTime: 60_000,
   });
 
-  const [form, setForm] = useState<Partial<HeroSection>>({ badge_text: "", title: "", subtitle: "", description: "", video_url: "" });
+  const [form, setForm] = useState<Partial<HeroSection>>({
+    badge_text: "", title: "", subtitle: "", description: "", video_url: "",
+  });
   const [saved, setSaved] = useState(form);
 
   useEffect(() => {
@@ -75,15 +83,44 @@ function HeroTab() {
     };
     setForm(next);
     setSaved(next);
+    if (raw.hero.background_image_url) setImagePreview(raw.hero.background_image_url);
   }, [raw?.hero]);
 
-  const dirty = JSON.stringify(form) !== JSON.stringify(saved);
-  const set = (k: keyof typeof form, v: string) => setForm((f) => ({ ...f, [k]: v }));
+  const dirty = JSON.stringify(form) !== JSON.stringify(saved) || !!imageFile || removeImage;
+  const set   = (k: keyof typeof form, v: string) => setForm((f) => ({ ...f, [k]: v }));
+
+  const handleImageChange = (file: File | null) => {
+    setImageFile(file);
+    setRemoveImage(false);
+    if (file) {
+      const url = URL.createObjectURL(file);
+      setImagePreview(url);
+    } else {
+      setImagePreview(raw?.hero?.background_image_url ?? null);
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setImageFile(null);
+    setImagePreview(null);
+    setRemoveImage(true);
+  };
 
   const save = useMutation({
-    mutationFn: () => homepageService.updateHero(form),
+    mutationFn: () => {
+      if (imageFile || removeImage) {
+        const fd = new FormData();
+        Object.entries(form).forEach(([k, v]) => { if (v !== undefined) fd.append(k, String(v)); });
+        if (imageFile)    fd.append("background_image", imageFile);
+        if (removeImage)  fd.append("background_image", "");
+        return homepageService.updateHero(fd);
+      }
+      return homepageService.updateHero(form);
+    },
     onSuccess: () => {
       setSaved(form);
+      setImageFile(null);
+      setRemoveImage(false);
       qc.invalidateQueries({ queryKey: homepageKeys.all });
       setToast(true);
       setTimeout(() => setToast(false), 2500);
@@ -94,6 +131,64 @@ function HeroTab() {
 
   return (
     <div className="space-y-5">
+
+      {/* ── Hero Image ─────────────────────────────────────────────── */}
+      <Field label="Hero Background / Title Image" hint="Shown as the hero section background or beside the title">
+        <div
+          onClick={() => !imagePreview && fileRef.current?.click()}
+          className={cn(
+            "relative w-full rounded-2xl border-2 border-dashed overflow-hidden transition-all",
+            imagePreview
+              ? "border-border h-52 cursor-default"
+              : "border-border hover:border-brand-500/50 h-36 flex items-center justify-center cursor-pointer bg-background/50"
+          )}
+        >
+          {imagePreview ? (
+            <>
+              <img src={imagePreview} alt="Hero" className="w-full h-full object-cover" />
+              <div className="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
+                <button
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); fileRef.current?.click(); }}
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/10 backdrop-blur text-white text-sm font-medium border border-white/20 hover:bg-white/20 transition-colors"
+                >
+                  <Upload className="h-4 w-4" /> Change Image
+                </button>
+                <button
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); handleRemoveImage(); }}
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl bg-red-500/70 backdrop-blur text-white text-sm font-medium hover:bg-red-500 transition-colors"
+                >
+                  <X className="h-4 w-4" /> Remove
+                </button>
+              </div>
+              {/* Corner badge */}
+              {imageFile && (
+                <span className="absolute top-2 left-2 px-2 py-1 rounded-lg bg-brand-500 text-white text-[10px] font-semibold">
+                  New — unsaved
+                </span>
+              )}
+            </>
+          ) : (
+            <div className="text-center text-muted-foreground py-4">
+              <div className="w-12 h-12 rounded-2xl bg-brand-500/10 flex items-center justify-center mx-auto mb-3">
+                <ImageIcon className="h-6 w-6 text-brand-400" />
+              </div>
+              <p className="text-sm font-medium text-foreground">Upload hero image</p>
+              <p className="text-xs mt-1">Click to browse · JPG, PNG, WebP · Max 5 MB</p>
+            </div>
+          )}
+        </div>
+        <input
+          ref={fileRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={(e) => handleImageChange(e.target.files?.[0] ?? null)}
+        />
+      </Field>
+
+      {/* ── Text fields ────────────────────────────────────────────── */}
       <Field label="Badge Text" hint='The pill above the title — e.g. "Trusted by Fortune 500 Companies"'>
         <input className={inputCls} value={form.badge_text ?? ""} onChange={(e) => set("badge_text", e.target.value)} placeholder="Trusted by Fortune 500 Companies" />
       </Field>
@@ -109,6 +204,7 @@ function HeroTab() {
       <Field label="Video URL" hint="Optional — used for a 'Watch Demo' modal or background">
         <input className={inputCls} value={form.video_url ?? ""} onChange={(e) => set("video_url", e.target.value)} placeholder="https://youtube.com/…" />
       </Field>
+
       <SaveBar dirty={dirty} saving={save.isPending} onSave={() => save.mutate()} />
       <AnimatePresence>{toast && <Toast msg="Hero section saved!" />}</AnimatePresence>
     </div>

@@ -72,11 +72,20 @@ export function Hero() {
 
   const floatingBadges = FLOATING_BADGE_CONFIGS.map((cfg) => ({ ...cfg, text: t(cfg.key) }));
 
+  const heroBgImage = hero?.background_image_url;
+
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
       {/* Animated background */}
       <div className="absolute inset-0 -z-10">
-        <div className="absolute inset-0 bg-gradient-to-br from-brand-950/50 via-background to-background dark:from-brand-950 dark:via-background" />
+        {heroBgImage ? (
+          <>
+            <img src={heroBgImage} alt="" className="absolute inset-0 w-full h-full object-cover" />
+            <div className="absolute inset-0 bg-background/70 backdrop-blur-sm" />
+          </>
+        ) : (
+          <div className="absolute inset-0 bg-gradient-to-br from-brand-950/50 via-background to-background dark:from-brand-950 dark:via-background" />
+        )}
         <div
           className="absolute inset-0 opacity-[0.03] dark:opacity-[0.07]"
           style={{

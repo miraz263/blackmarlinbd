@@ -232,6 +232,7 @@
   "services_page.clear_filters": "Clear filters",
   "services_page.no_match": "No services match your search.",
   "services_page.no_match_hint": "Try a different keyword or clear the filters.",
+  "services_page.browsing_category": "Category",
 
   "blog.page_title": "Engineering Insights",
   "blog.page_subtitle": "Deep dives, tutorials, and perspectives from our team of engineers and architects.",

@@ -19,7 +19,9 @@ const ProjectsPage = lazy(() => import("@/pages/ProjectsPage"));
 const ProjectDetailPage = lazy(() => import("@/pages/ProjectDetailPage"));
 const ProductsPage      = lazy(() => import("@/pages/ProductsPage"));
 const ProductDetailPage = lazy(() => import("@/pages/ProductDetailPage"));
-const BlogPage = lazy(() => import("@/pages/BlogPage"));
+const BlogPage       = lazy(() => import("@/pages/BlogPage"));
+const BlogWritePage  = lazy(() => import("@/pages/BlogWritePage"));
+const BlogDetailPage = lazy(() => import("@/pages/BlogDetailPage"));
 const CareersPage = lazy(() => import("@/pages/CareersPage"));
 const ContactPage = lazy(() => import("@/pages/ContactPage"));
 const LoginPage = lazy(() => import("@/pages/LoginPage"));
@@ -38,6 +40,7 @@ const AIPage             = lazy(() => import("@/pages/dashboard/AIPage"));
 const SettingsPage       = lazy(() => import("@/pages/dashboard/SettingsPage"));
 const ProjectsManagerPage = lazy(() => import("@/pages/dashboard/ProjectsManagerPage"));
 const ProductsManagerPage = lazy(() => import("@/pages/dashboard/ProductsManagerPage"));
+const SectionsManagerPage = lazy(() => import("@/pages/dashboard/SectionsManagerPage"));
 const JobsManagerPage     = lazy(() => import("@/pages/dashboard/JobsManagerPage"));
 const BlogManagerPage     = lazy(() => import("@/pages/dashboard/BlogManagerPage"));
 const UsersManagerPage    = lazy(() => import("@/pages/dashboard/UsersManagerPage"));
@@ -99,7 +102,9 @@ function AppContent() {
         <Route path="/products/:productSlug" element={<PublicLayout><ProductDetailPage /></PublicLayout>} />
         <Route path="/projects" element={<PublicLayout><ProjectsPage /></PublicLayout>} />
         <Route path="/projects/:slug" element={<PublicLayout><ProjectDetailPage /></PublicLayout>} />
-        <Route path="/blog" element={<PublicLayout><BlogPage /></PublicLayout>} />
+        <Route path="/blog"        element={<PublicLayout><BlogPage /></PublicLayout>} />
+        <Route path="/blog/write"  element={<PublicLayout><BlogWritePage /></PublicLayout>} />
+        <Route path="/blog/:slug"  element={<PublicLayout><BlogDetailPage /></PublicLayout>} />
         <Route path="/careers" element={<PublicLayout><CareersPage /></PublicLayout>} />
         <Route path="/contact" element={<PublicLayout><ContactPage /></PublicLayout>} />
         <Route path="/my-account" element={<ViewerDashboardPage />} />
@@ -118,8 +123,9 @@ function AppContent() {
           <Route path="analytics"     element={<Suspense fallback={<PageLoader />}><AnalyticsPage /></Suspense>} />
           <Route path="translations" element={<Suspense fallback={<PageLoader />}><TranslationsPage /></Suspense>} />
           <Route path="ai"           element={<Suspense fallback={<PageLoader />}><AIPage /></Suspense>} />
-          <Route path="projects" element={<Suspense fallback={<PageLoader />}><ProjectsManagerPage /></Suspense>} />
-          <Route path="products" element={<Suspense fallback={<PageLoader />}><ProductsManagerPage /></Suspense>} />
+          <Route path="projects"  element={<Suspense fallback={<PageLoader />}><ProjectsManagerPage /></Suspense>} />
+          <Route path="products"  element={<Suspense fallback={<PageLoader />}><ProductsManagerPage /></Suspense>} />
+          <Route path="sections"  element={<Suspense fallback={<PageLoader />}><SectionsManagerPage /></Suspense>} />
           <Route path="blog" element={<Suspense fallback={<PageLoader />}><BlogManagerPage /></Suspense>} />
           <Route path="jobs" element={<Suspense fallback={<PageLoader />}><JobsManagerPage /></Suspense>} />
           <Route path="users"    element={<Suspense fallback={<PageLoader />}><UsersManagerPage /></Suspense>} />

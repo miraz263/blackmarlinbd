@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { SEOHead } from "@/components/seo/SEOHead";
 import { motion, AnimatePresence } from "framer-motion";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import {
   Search, ArrowRight, X,
@@ -172,11 +172,28 @@ function ServiceCard({ service, index, exploreLabel, featuredLabel }: { service:
 
 export default function ServicesPage() {
   const { t } = useTranslation();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [search,      setSearch]      = useState("");
-  const [activeCategory, setCategory] = useState<string>("all");
+  const [activeCategory, setCategory] = useState<string>(searchParams.get("category") ?? "all");
   const [featuredOnly, setFeatured]   = useState(false);
   const debouncedSearch               = useDebounce(search, 300);
   const inputRef                      = useRef<HTMLInputElement>(null);
+
+  // Sync URL param → filter when the user navigates via the mega-menu
+  useEffect(() => {
+    const cat = searchParams.get("category") ?? "all";
+    setCategory(cat);
+  }, [searchParams]);
+
+  const updateCategory = (slug: string) => {
+    setCategory(slug);
+    if (slug === "all") {
+      searchParams.delete("category");
+    } else {
+      searchParams.set("category", slug);
+    }
+    setSearchParams(searchParams, { replace: true });
+  };
 
   const params: ServiceParams = {
     ...(debouncedSearch          && { search: debouncedSearch }),
@@ -199,14 +216,18 @@ export default function ServicesPage() {
   });
 
   const displayedServices = services ?? FALLBACK_SERVICES;
+  const activeCategoryObj = categories?.find((c) => c.slug === activeCategory);
+
+  const pageTitle    = activeCategoryObj?.name    ?? t("services_page.title");
+  const pageSubtitle = activeCategoryObj?.description ?? t("services_page.subtitle");
 
   return (
     <>
       <SEOHead
         pageKey="services"
         fallback={{
-          title: "Services — BlackMarlinBD",
-          description: "Enterprise IT services: AI & ML, financial systems, cloud infrastructure, web & mobile, and cybersecurity.",
+          title: activeCategoryObj ? `${activeCategoryObj.name} — BlackMarlinBD` : "Services — BlackMarlinBD",
+          description: pageSubtitle || "Enterprise IT services: AI & ML, financial systems, cloud infrastructure, web & mobile, and cybersecurity.",
         }}
       />
 
@@ -215,15 +236,22 @@ export default function ServicesPage() {
 
           {/* ── Header ─────────────────────────────────────────────────── */}
           <motion.div
+            key={activeCategory}
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             className="text-center mb-14"
           >
+            {activeCategoryObj && (
+              <span className="inline-block px-4 py-1.5 rounded-full text-sm font-medium border mb-4"
+                style={{ backgroundColor: activeCategoryObj.color + "20", color: activeCategoryObj.color, borderColor: activeCategoryObj.color + "40" }}>
+                {t("services_page.browsing_category")}
+              </span>
+            )}
             <h1 className="text-5xl sm:text-6xl font-bold mb-4">
-              <span className="gradient-text">{t("services_page.title")}</span>
+              <span className="gradient-text">{pageTitle}</span>
             </h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              {t("services_page.subtitle")}
+              {pageSubtitle}
             </p>
           </motion.div>
 
@@ -253,7 +281,7 @@ export default function ServicesPage() {
             {/* Category chips */}
             <div className="flex flex-wrap gap-2">
               <button
-                onClick={() => setCategory("all")}
+                onClick={() => updateCategory("all")}
                 className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${
                   activeCategory === "all"
                     ? "bg-brand-500 text-white shadow-md shadow-brand-500/20"
@@ -266,7 +294,7 @@ export default function ServicesPage() {
               {categories?.map((cat) => (
                 <button
                   key={cat.slug}
-                  onClick={() => setCategory(cat.slug === activeCategory ? "all" : cat.slug)}
+                  onClick={() => updateCategory(cat.slug === activeCategory ? "all" : cat.slug)}
                   className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${
                     activeCategory === cat.slug
                       ? "text-white shadow-md"
@@ -305,7 +333,7 @@ export default function ServicesPage() {
             </p>
             {(search || activeCategory !== "all" || featuredOnly) && (
               <button
-                onClick={() => { setSearch(""); setCategory("all"); setFeatured(false); }}
+                onClick={() => { setSearch(""); updateCategory("all"); setFeatured(false); }}
                 className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1"
               >
                 <X className="h-3 w-3" /> {t("services_page.clear_filters")}

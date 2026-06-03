@@ -350,6 +350,8 @@ export interface ServiceParams {
   featured?: boolean;
   status?: string;
   ordering?: string;
+  page_size?: number;
+  page?: number;
 }
 
 // ─── About CMS ─────────────────────────────────────────────────────────────

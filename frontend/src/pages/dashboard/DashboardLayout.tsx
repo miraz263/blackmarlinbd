@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard, FolderKanban, FileText, Briefcase,
   Users, Settings, LogOut, ChevronRight, Bell, Image,
-  ShieldCheck, Layers, GitMerge, BarChart2, Languages, Sparkles, Package2, Info, Home, MessageSquare, Inbox,
+  ShieldCheck, Layers, GitMerge, BarChart2, Languages, Sparkles, Package2, Info, Home, MessageSquare, Inbox, ArrowRightLeft,
 } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuthStore } from "@/store/authStore";
@@ -24,8 +24,9 @@ const ALL_NAV: NavEntry[] = [
   {
     kind: "group", label: "Content", icon: FolderKanban,
     children: [
-      { label: "Projects", href: "/dashboard/projects", icon: FolderKanban, module: "projects" },
-      { label: "Products", href: "/dashboard/products", icon: Package2,     module: "projects" },
+      { label: "Projects",  href: "/dashboard/projects",  icon: FolderKanban,    module: "projects" },
+      { label: "Products",  href: "/dashboard/products",  icon: Package2,        module: "projects" },
+      { label: "Sections",  href: "/dashboard/sections",  icon: ArrowRightLeft,  module: "projects" },
     ],
   },
   { label: "Homepage", href: "/dashboard/homepage", icon: Home,      module: "site_settings" },

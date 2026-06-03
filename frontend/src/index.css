@@ -97,4 +97,54 @@
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
+
+  /* ── Blog article prose ────────────────────────────────────────────── */
+  .blog-content {
+    color: hsl(var(--foreground));
+    line-height: 1.85;
+    font-size: 1.0625rem;
+  }
+  .blog-content p   { margin-bottom: 1.4rem; color: hsl(var(--muted-foreground)); }
+  .blog-content h1  { font-size: 2rem;    font-weight: 700; margin: 2.5rem 0 1rem; color: hsl(var(--foreground)); }
+  .blog-content h2  { font-size: 1.5rem;  font-weight: 700; margin: 2rem 0 0.75rem; color: hsl(var(--foreground)); border-bottom: 1px solid hsl(var(--border)); padding-bottom: 0.4rem; }
+  .blog-content h3  { font-size: 1.2rem;  font-weight: 600; margin: 1.5rem 0 0.5rem; color: hsl(var(--foreground)); }
+  .blog-content ul, .blog-content ol { padding-left: 1.5rem; margin-bottom: 1.2rem; }
+  .blog-content ul  { list-style: disc; }
+  .blog-content ol  { list-style: decimal; }
+  .blog-content li  { margin-bottom: 0.4rem; color: hsl(var(--muted-foreground)); }
+  .blog-content strong { color: hsl(var(--foreground)); font-weight: 600; }
+  .blog-content em  { font-style: italic; }
+  .blog-content a   { color: hsl(var(--brand-400, 239 84% 67%)); text-decoration: underline; text-underline-offset: 3px; }
+  .blog-content a:hover { opacity: 0.8; }
+  .blog-content code {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.875em;
+    background: hsl(var(--accent));
+    color: hsl(var(--accent-foreground));
+    padding: 0.15em 0.4em;
+    border-radius: 0.3rem;
+  }
+  .blog-content pre {
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
+    border-radius: 0.75rem;
+    padding: 1.25rem 1.5rem;
+    overflow-x: auto;
+    margin-bottom: 1.5rem;
+  }
+  .blog-content pre code {
+    background: transparent;
+    padding: 0;
+    font-size: 0.875rem;
+    color: hsl(var(--foreground));
+  }
+  .blog-content blockquote {
+    border-left: 3px solid hsl(var(--brand-500, 239 84% 67%));
+    padding-left: 1.25rem;
+    margin: 1.5rem 0;
+    color: hsl(var(--muted-foreground));
+    font-style: italic;
+  }
+  .blog-content hr { border-color: hsl(var(--border)); margin: 2rem 0; }
+  .blog-content img { border-radius: 0.75rem; margin: 1.5rem auto; max-width: 100%; }
 }

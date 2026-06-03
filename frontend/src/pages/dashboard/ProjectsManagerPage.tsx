@@ -500,14 +500,14 @@ function ProjectRow({
         <p className="text-sm font-semibold text-foreground truncate">{project.title}</p>
         <p className="text-xs text-muted-foreground truncate mt-0.5">{project.short_description}</p>
         <div className="flex flex-wrap gap-1 mt-1.5">
-          {project.tech_stack?.slice(0, 3).map((t) => (
+          {(Array.isArray(project.tech_stack) ? project.tech_stack : []).slice(0, 3).map((t) => (
             <span key={t} className="px-1.5 py-0.5 rounded bg-accent text-muted-foreground text-[10px] font-medium">
               {t}
             </span>
           ))}
-          {(project.tech_stack?.length ?? 0) > 3 && (
+          {(Array.isArray(project.tech_stack) ? project.tech_stack.length : 0) > 3 && (
             <span className="px-1.5 py-0.5 rounded bg-accent text-muted-foreground text-[10px]">
-              +{project.tech_stack.length - 3}
+              +{(Array.isArray(project.tech_stack) ? project.tech_stack.length : 0) - 3}
             </span>
           )}
         </div>

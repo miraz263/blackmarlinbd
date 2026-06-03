@@ -16,7 +16,10 @@ export const homepageService = {
 
   // ── Hero singleton ────────────────────────────────────────────────────────
   getHero: () => apiClient.get<HeroSection>("/home/hero/"),
-  updateHero: (data: Partial<HeroSection>) => apiClient.patch<HeroSection>("/home/hero/", data),
+  updateHero: (data: Partial<HeroSection> | FormData) =>
+    apiClient.patch<HeroSection>("/home/hero/", data, {
+      headers: data instanceof FormData ? { "Content-Type": "multipart/form-data" } : {},
+    }),
 
   // ── Hero buttons ──────────────────────────────────────────────────────────
   getButtons: () => apiClient.get<{ results: HeroButton[] }>("/home/hero/buttons/"),
