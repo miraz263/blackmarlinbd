@@ -1,8 +1,11 @@
 from rest_framework import serializers
+from apps.translations.mixins import TranslatableSerializerMixin
 from .models import AboutPage, Mission, Vision, CoreValue, TeamMember, AboutStatistic
 
 
-class AboutPageSerializer(serializers.ModelSerializer):
+class AboutPageSerializer(TranslatableSerializerMixin, serializers.ModelSerializer):
+    translatable_fields = ["badge_text", "hero_title", "hero_subtitle", "hero_description", "tagline"]
+
     class Meta:
         model = AboutPage
         fields = [
@@ -16,19 +19,25 @@ class AboutPageSerializer(serializers.ModelSerializer):
         ]
 
 
-class MissionSerializer(serializers.ModelSerializer):
+class MissionSerializer(TranslatableSerializerMixin, serializers.ModelSerializer):
+    translatable_fields = ["title", "description"]
+
     class Meta:
         model = Mission
         fields = ["id", "title", "description"]
 
 
-class VisionSerializer(serializers.ModelSerializer):
+class VisionSerializer(TranslatableSerializerMixin, serializers.ModelSerializer):
+    translatable_fields = ["title", "description"]
+
     class Meta:
         model = Vision
         fields = ["id", "title", "description"]
 
 
-class CoreValueSerializer(serializers.ModelSerializer):
+class CoreValueSerializer(TranslatableSerializerMixin, serializers.ModelSerializer):
+    translatable_fields = ["title", "description"]
+
     class Meta:
         model = CoreValue
         fields = ["id", "title", "description", "icon_name", "order", "is_published"]
@@ -65,7 +74,9 @@ class TeamMemberSerializer(serializers.ModelSerializer):
         )
 
 
-class AboutStatisticSerializer(serializers.ModelSerializer):
+class AboutStatisticSerializer(TranslatableSerializerMixin, serializers.ModelSerializer):
+    translatable_fields = ["label"]
+
     class Meta:
         model = AboutStatistic
         fields = ["id", "icon_name", "value", "label", "order", "is_published"]

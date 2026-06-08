@@ -19,24 +19,11 @@ const ICON_MAP: Record<string, LucideIcon> = {
 const VALUE_ICON_MAP = ICON_MAP;
 
 
-// ─── Fallback data ─────────────────────────────────────────────────────────
-
-const FALLBACK_VALUES: CoreValue[] = [
-  { id: -1, title: "Engineering Excellence", icon_name: "Code2", order: 0, is_published: true,
-    description: "We write clean, tested, and maintainable code that stands the test of time." },
-  { id: -2, title: "Client Obsession", icon_name: "Heart", order: 1, is_published: true,
-    description: "Every decision we make starts with the question: how does this serve our client?" },
-  { id: -3, title: "Radical Transparency", icon_name: "Shield", order: 2, is_published: true,
-    description: "No surprises, no hidden fees. We communicate openly at every stage." },
-  { id: -4, title: "Continuous Innovation", icon_name: "Lightbulb", order: 3, is_published: true,
-    description: "We invest 20% of our time in R&D to stay ahead of what's next." },
-];
-
 const FALLBACK_TEAM: TeamMember[] = [
-  { id: -1, name: "Arif Rahman",    designation: "CEO & Co-Founder",    photo_url: null, bio: "", linkedin: "", github: "", email: "", display_order: 0, is_published: true },
-  { id: -2, name: "Sarah Chen",     designation: "CTO",                  photo_url: null, bio: "", linkedin: "", github: "", email: "", display_order: 1, is_published: true },
-  { id: -3, name: "Marcus Johnson", designation: "Head of AI",           photo_url: null, bio: "", linkedin: "", github: "", email: "", display_order: 2, is_published: true },
-  { id: -4, name: "Priya Patel",    designation: "Head of Engineering",  photo_url: null, bio: "", linkedin: "", github: "", email: "", display_order: 3, is_published: true },
+  { id: -1, name: "Arif Rahman",    designation: "CEO & Co-Founder",   photo_url: null, bio: "", linkedin: "", github: "", email: "", display_order: 0, is_published: true },
+  { id: -2, name: "Sarah Chen",     designation: "CTO",                 photo_url: null, bio: "", linkedin: "", github: "", email: "", display_order: 1, is_published: true },
+  { id: -3, name: "Marcus Johnson", designation: "Head of AI",          photo_url: null, bio: "", linkedin: "", github: "", email: "", display_order: 2, is_published: true },
+  { id: -4, name: "Priya Patel",    designation: "Head of Engineering", photo_url: null, bio: "", linkedin: "", github: "", email: "", display_order: 3, is_published: true },
 ];
 
 const AVATAR_GRADIENTS = [
@@ -44,13 +31,6 @@ const AVATAR_GRADIENTS = [
   "from-cyan-500 to-blue-500",
   "from-green-500 to-emerald-500",
   "from-orange-500 to-red-500",
-];
-
-const DEFAULT_STATS = [
-  { id: -1, icon_name: "Code2",  value: "1M+",  label: "Lines of Production Code", order: 0, is_published: true },
-  { id: -2, icon_name: "Globe2", value: "25+",  label: "Countries Served",          order: 1, is_published: true },
-  { id: -3, icon_name: "Users",  value: "120+", label: "Engineers Worldwide",       order: 2, is_published: true },
-  { id: -4, icon_name: "Award",  value: "15+",  label: "Industry Awards",           order: 3, is_published: true },
 ];
 
 // ─── Sub-components ────────────────────────────────────────────────────────
@@ -155,25 +135,43 @@ function ValueCard({ value }: { value: CoreValue }) {
 
 export default function AboutPage() {
   const { data } = useAboutQuery();
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
 
   const page       = data?.page;
   const mission    = data?.mission;
   const vision     = data?.vision;
+
+  // Fallback stat labels translated via i18n
+  const DEFAULT_STATS = [
+    { id: -1, icon_name: "Code2",  value: "1M+",  label: t("about.stat_code"),      order: 0, is_published: true },
+    { id: -2, icon_name: "Globe2", value: "25+",  label: t("about.stat_countries"),  order: 1, is_published: true },
+    { id: -3, icon_name: "Users",  value: "120+", label: t("about.stat_engineers"),  order: 2, is_published: true },
+    { id: -4, icon_name: "Award",  value: "15+",  label: t("about.stat_awards"),     order: 3, is_published: true },
+  ];
+
+  // Fallback core values translated via i18n
+  const FALLBACK_VALUES: CoreValue[] = [
+    { id: -1, title: t("about.val_excellence_title"),   icon_name: "Code2",     order: 0, is_published: true, description: t("about.val_excellence_desc") },
+    { id: -2, title: t("about.val_client_title"),       icon_name: "Heart",     order: 1, is_published: true, description: t("about.val_client_desc") },
+    { id: -3, title: t("about.val_transparency_title"), icon_name: "Shield",    order: 2, is_published: true, description: t("about.val_transparency_desc") },
+    { id: -4, title: t("about.val_innovation_title"),   icon_name: "Lightbulb", order: 3, is_published: true, description: t("about.val_innovation_desc") },
+  ];
+
   const statistics = data ? (data.statistics?.length ? data.statistics : []) : DEFAULT_STATS;
   const rawValues  = data?.values?.length ? data.values : FALLBACK_VALUES;
   const team       = data?.team?.length   ? data.team   : FALLBACK_TEAM;
 
-  // DB value wins if non-empty; otherwise fall back to i18n translation
-  const pageBadge  = page?.badge_text       || t("about.our_story");
-  const pageTitle  = page?.hero_title        || t("about.hero_title");
-  const pageDesc   = page?.hero_description  || t("about.hero_description");
+  // English: prefer CMS content (admin-customisable); non-English: use i18n JSON
+  // because the backend falls back to English when no ContentTranslation row exists.
+  const pageBadge = language === "en" ? (page?.badge_text      || t("about.our_story"))        : t("about.our_story");
+  const pageTitle = language === "en" ? (page?.hero_title       || t("about.hero_title"))       : t("about.hero_title");
+  const pageDesc  = language === "en" ? (page?.hero_description || t("about.hero_description")) : t("about.hero_description");
 
-  const missionTitle = mission?.title       || t("about.mission_title");
-  const missionDesc  = mission?.description || t("about.mission_desc");
+  const missionTitle = language === "en" ? (mission?.title       || t("about.mission_title")) : t("about.mission_title");
+  const missionDesc  = language === "en" ? (mission?.description || t("about.mission_desc"))  : t("about.mission_desc");
 
-  const visionTitle = vision?.title       || t("about.vision_title");
-  const visionDesc  = vision?.description || t("about.vision_desc");
+  const visionTitle = language === "en" ? (vision?.title       || t("about.vision_title")) : t("about.vision_title");
+  const visionDesc  = language === "en" ? (vision?.description || t("about.vision_desc"))  : t("about.vision_desc");
 
   const values = rawValues;
 

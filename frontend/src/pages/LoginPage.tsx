@@ -8,6 +8,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuthStore } from "@/store/authStore";
+import { useTranslation } from "@/hooks/useTranslation";
 
 const schema = z.object({
   email: z.string().email("Invalid email"),
@@ -21,6 +22,7 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const navigate = useNavigate();
   const { login } = useAuthStore();
+  const { t } = useTranslation();
 
   const {
     register,
@@ -34,7 +36,7 @@ export default function LoginPage() {
       await login(data.email, data.password);
       navigate("/dashboard");
     } catch {
-      setError("Invalid email or password. Please try again.");
+      setError(t("auth.invalid_credentials"));
     }
   };
 
@@ -56,8 +58,8 @@ export default function LoginPage() {
                 <span className="text-white font-bold">BM</span>
               </div>
             </Link>
-            <h1 className="text-3xl font-bold mb-2">Welcome back</h1>
-            <p className="text-muted-foreground text-sm">Sign in to your BlackMarlinBD account</p>
+            <h1 className="text-3xl font-bold mb-2">{t("auth.welcome_back")}</h1>
+            <p className="text-muted-foreground text-sm">{t("auth.signin_subtitle")}</p>
           </div>
 
           <div className="p-8 rounded-2xl bg-card border border-border">
@@ -69,7 +71,7 @@ export default function LoginPage() {
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-1.5">Email</label>
+                <label className="block text-sm font-medium mb-1.5">{t("auth.email")}</label>
                 <input
                   {...register("email")}
                   type="email"
@@ -80,7 +82,7 @@ export default function LoginPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1.5">Password</label>
+                <label className="block text-sm font-medium mb-1.5">{t("auth.password")}</label>
                 <div className="relative">
                   <input
                     {...register("password")}
@@ -100,14 +102,14 @@ export default function LoginPage() {
               </div>
 
               <Button type="submit" variant="gradient" className="w-full" size="lg" loading={isSubmitting}>
-                Sign In
+                {t("auth.sign_in")}
               </Button>
             </form>
 
             <p className="text-center text-sm text-muted-foreground mt-6">
-              Don't have an account?{" "}
+              {t("auth.no_account")}{" "}
               <Link to="/register" className="text-brand-400 hover:text-brand-300 font-medium">
-                Sign up
+                {t("auth.sign_up")}
               </Link>
             </p>
           </div>

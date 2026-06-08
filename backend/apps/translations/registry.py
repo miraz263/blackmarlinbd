@@ -8,12 +8,21 @@ Translations for other languages live in ContentTranslation.
 
 TRANSLATABLE_MODELS: dict[str, list[str]] = {
     "blog.blogpost":      ["title", "excerpt", "content"],
-    "services.service":   ["title", "short_description", "description"],
+    "services.servicecategory": ["name", "description"],
+    "services.service":   ["title", "tagline", "short_description", "description", "body"],
     "projects.project":   ["title", "short_description", "description"],
     "page_builder.page":  ["title", "description"],
     "jobs.job":           ["title", "description", "requirements"],
-    "about.aboutpage":    ["hero_title", "hero_subtitle", "mission"],
-    "homepage.heroblock": ["title", "subtitle"],
+    "about.aboutpage":    ["badge_text", "hero_title", "hero_subtitle", "hero_description", "tagline"],
+    "about.mission":      ["title", "description"],
+    "about.vision":       ["title", "description"],
+    "about.corevalue":    ["title", "description"],
+    "about.aboutstatistic": ["label"],
+    "homepage.herosection": ["title", "subtitle", "description", "badge_text"],
+    "homepage.homepagesection": ["title", "subtitle", "description", "badge_text", "cta_text"],
+    "homepage.serviceitem": ["title", "description"],
+    "products.productcategory": ["name"],
+    "products.product": ["name", "tagline", "description"],
 }
 
 # Fields that are long-form (textarea vs single-line input)

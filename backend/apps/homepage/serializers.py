@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from apps.translations.mixins import TranslatableSerializerMixin
 from .models import (
     HeroSection,
     HeroButton,
@@ -16,7 +17,8 @@ class HeroButtonSerializer(serializers.ModelSerializer):
         fields = ["id", "label", "url", "variant", "order", "is_published"]
 
 
-class HeroSectionSerializer(serializers.ModelSerializer):
+class HeroSectionSerializer(TranslatableSerializerMixin, serializers.ModelSerializer):
+    translatable_fields = ["title", "subtitle", "description", "badge_text"]
     buttons = HeroButtonSerializer(many=True, read_only=True)
     background_image_url = serializers.SerializerMethodField()
 
@@ -80,7 +82,9 @@ class TechItemSerializer(serializers.ModelSerializer):
         fields = ["id", "name", "logo", "order", "is_published"]
 
 
-class ServiceItemSerializer(serializers.ModelSerializer):
+class ServiceItemSerializer(TranslatableSerializerMixin, serializers.ModelSerializer):
+    translatable_fields = ["title", "description"]
+
     class Meta:
         model = ServiceItem
         fields = [
@@ -96,7 +100,9 @@ class ServiceItemSerializer(serializers.ModelSerializer):
         ]
 
 
-class HomepageSectionSerializer(serializers.ModelSerializer):
+class HomepageSectionSerializer(TranslatableSerializerMixin, serializers.ModelSerializer):
+    translatable_fields = ["title", "subtitle", "description", "badge_text", "cta_text"]
+
     class Meta:
         model = HomepageSection
         fields = [

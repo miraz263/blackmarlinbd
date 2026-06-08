@@ -23,25 +23,25 @@ const schema = z.object({
   budget: z.string().optional(),
 });
 
-const services = [
-  { value: "ai_ml", label: "AI & Machine Learning" },
-  { value: "financial", label: "Financial Systems" },
-  { value: "cloud", label: "Cloud & DevOps" },
-  { value: "web_mobile", label: "Web & Mobile" },
-  { value: "cybersecurity", label: "Cybersecurity" },
-  { value: "other", label: "Other" },
-];
-
-const budgets = [
-  "$5k – $20k",
-  "$20k – $50k",
-  "$50k – $100k",
-  "$100k – $500k",
-  "$500k+",
-];
-
 export default function ContactPage() {
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
+
+  const services = [
+    { value: "ai_ml",        label: t("contact.svc_ai") },
+    { value: "financial",    label: t("contact.svc_financial") },
+    { value: "cloud",        label: t("contact.svc_cloud") },
+    { value: "web_mobile",   label: t("contact.svc_web") },
+    { value: "cybersecurity",label: t("contact.svc_cyber") },
+    { value: "other",        label: t("contact.svc_other") },
+  ];
+
+  const budgets = [
+    { key: "contact.budget_5k",   value: "$5k – $20k" },
+    { key: "contact.budget_20k",  value: "$20k – $50k" },
+    { key: "contact.budget_50k",  value: "$50k – $100k" },
+    { key: "contact.budget_100k", value: "$100k – $500k" },
+    { key: "contact.budget_500k", value: "$500k+" },
+  ];
   const [submitted, setSubmitted] = useState(false);
 
   const { data: site } = useQuery({
@@ -55,10 +55,11 @@ export default function ContactPage() {
     staleTime: 10 * 60 * 1000,
   });
 
-  const pageTitle       = contactCfg?.page_title       || t("contact.title");
-  const pageSubtitle    = contactCfg?.page_subtitle     || t("contact.subtitle");
-  const responseText    = contactCfg?.response_time_text || t("contact.response_time");
-  const responseDesc    = contactCfg?.response_time_desc || t("contact.response_desc");
+  // English: use CMS content (admin-customisable); non-English: use i18n JSON.
+  const pageTitle    = language === "en" ? (contactCfg?.page_title        || t("contact.title"))        : t("contact.title");
+  const pageSubtitle = language === "en" ? (contactCfg?.page_subtitle      || t("contact.subtitle"))     : t("contact.subtitle");
+  const responseText = language === "en" ? (contactCfg?.response_time_text || t("contact.response_time")): t("contact.response_time");
+  const responseDesc = language === "en" ? (contactCfg?.response_time_desc || t("contact.response_desc")): t("contact.response_desc");
 
   const contactInfoRows = [
     { icon: Mail,   labelKey: "contact.info_email",   value: site?.email   || "hello@blackmarlinbd.com" },
@@ -156,7 +157,7 @@ export default function ContactPage() {
                       <label className="block text-sm font-medium mb-1.5">{t("contact.full_name")} *</label>
                       <input
                         {...register("name")}
-                        placeholder="John Smith"
+                        placeholder={t("contact.name_placeholder")}
                         className="w-full px-4 py-2.5 rounded-xl bg-background border border-border text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                       />
                       {errors.name && <p className="text-red-400 text-xs mt-1">{errors.name.message}</p>}
@@ -218,7 +219,7 @@ export default function ContactPage() {
                       >
                         <option value="">{t("contact.select_range")}</option>
                         {budgets.map((b) => (
-                          <option key={b} value={b}>{b}</option>
+                          <option key={b.key} value={b.value}>{t(b.key)}</option>
                         ))}
                       </select>
                     </div>
@@ -229,7 +230,7 @@ export default function ContactPage() {
                     <label className="block text-sm font-medium mb-1.5">{t("contact.subject")} *</label>
                     <input
                       {...register("subject")}
-                      placeholder="Brief description of your project"
+                      placeholder={t("contact.subject_placeholder")}
                       className="w-full px-4 py-2.5 rounded-xl bg-background border border-border text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                     />
                     {errors.subject && <p className="text-red-400 text-xs mt-1">{errors.subject.message}</p>}
@@ -241,7 +242,7 @@ export default function ContactPage() {
                     <textarea
                       {...register("message")}
                       rows={5}
-                      placeholder="Tell us about your requirements, timeline, and any specific technical needs..."
+                      placeholder={t("contact.message_placeholder")}
                       className="w-full px-4 py-2.5 rounded-xl bg-background border border-border text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 resize-none"
                     />
                     {errors.message && <p className="text-red-400 text-xs mt-1">{errors.message.message}</p>}

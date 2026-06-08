@@ -1,8 +1,10 @@
 from rest_framework import serializers
+from apps.translations.mixins import TranslatableSerializerMixin
 from .models import ServiceCategory, Technology, Service, CaseStudy
 
 
-class ServiceCategorySerializer(serializers.ModelSerializer):
+class ServiceCategorySerializer(TranslatableSerializerMixin, serializers.ModelSerializer):
+    translatable_fields = ["name", "description"]
     service_count = serializers.IntegerField(read_only=True)
 
     class Meta:
@@ -43,7 +45,8 @@ class CaseStudySerializer(serializers.ModelSerializer):
 
 # ─── List serializer — lightweight, no body/case_studies ──────────────────
 
-class ServiceListSerializer(serializers.ModelSerializer):
+class ServiceListSerializer(TranslatableSerializerMixin, serializers.ModelSerializer):
+    translatable_fields = ["title", "tagline", "short_description"]
     category     = ServiceCategorySerializer(read_only=True)
     technologies = TechnologySerializer(many=True, read_only=True)
     cover_image_url = serializers.SerializerMethodField()
@@ -67,6 +70,7 @@ class ServiceListSerializer(serializers.ModelSerializer):
 # ─── Detail serializer — full payload ─────────────────────────────────────
 
 class ServiceDetailSerializer(ServiceListSerializer):
+    translatable_fields = ServiceListSerializer.translatable_fields + ["description", "body"]
     case_studies = CaseStudySerializer(
         many=True, read_only=True, source="case_studies_published"
     )

@@ -3,11 +3,12 @@ import { motion, useInView } from "framer-motion";
 import { Link } from "react-router-dom";
 import { BarChart2, Heart, Brain, Building2, ArrowRight, type LucideIcon } from "lucide-react";
 import { PRODUCT_CATEGORIES } from "@/data/productCatalog";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface SuiteConfig {
   categorySlug: string;
-  displayName: string;
-  tagline: string;
+  nameKey: string;
+  taglineKey: string;
   icon: LucideIcon;
   cardGradient: string;
   iconGradient: string;
@@ -16,32 +17,32 @@ interface SuiteConfig {
 const SUITE_CONFIGS: SuiteConfig[] = [
   {
     categorySlug: "fintech",
-    displayName: "BlackMarlin FinTech Suite",
-    tagline: "Institutional-grade capital markets infrastructure",
+    nameKey: "suites.fintech_name",
+    taglineKey: "suites.fintech_tagline",
     icon: BarChart2,
     cardGradient: "from-purple-500/10 to-brand-500/10",
     iconGradient: "from-purple-500 to-brand-500",
   },
   {
     categorySlug: "healthcare",
-    displayName: "BlackMarlin Healthcare Suite",
-    tagline: "End-to-end digital health platform for modern providers",
+    nameKey: "suites.healthcare_name",
+    taglineKey: "suites.healthcare_tagline",
     icon: Heart,
     cardGradient: "from-red-500/10 to-rose-500/10",
     iconGradient: "from-red-500 to-rose-500",
   },
   {
     categorySlug: "ai-suite",
-    displayName: "BlackMarlin AI Suite",
-    tagline: "Intelligent automation and knowledge systems at scale",
+    nameKey: "suites.ai_name",
+    taglineKey: "suites.ai_tagline",
     icon: Brain,
     cardGradient: "from-brand-500/10 to-cyan-500/10",
     iconGradient: "from-brand-500 to-cyan-500",
   },
   {
     categorySlug: "business-solution",
-    displayName: "BlackMarlin Enterprise Suite",
-    tagline: "Unified operations platform for enterprise organisations",
+    nameKey: "suites.enterprise_name",
+    taglineKey: "suites.enterprise_tagline",
     icon: Building2,
     cardGradient: "from-green-500/10 to-emerald-500/10",
     iconGradient: "from-green-500 to-emerald-500",
@@ -59,6 +60,7 @@ const cardVariants = {
 };
 
 function SuiteCard({ config }: { config: SuiteConfig }) {
+  const { t } = useTranslation();
   const Icon = config.icon;
   const cat = PRODUCT_CATEGORIES.find((c) => c.slug === config.categorySlug);
   const products = cat ? cat.products.slice(0, 5) : [];
@@ -81,10 +83,10 @@ function SuiteCard({ config }: { config: SuiteConfig }) {
         </div>
 
         <h3 className="text-lg font-bold text-foreground mb-1 leading-snug">
-          {config.displayName}
+          {t(config.nameKey)}
         </h3>
         <p className="text-sm text-muted-foreground mb-5 leading-relaxed">
-          {config.tagline}
+          {t(config.taglineKey)}
         </p>
 
         <div className="flex flex-wrap gap-2 mb-6">
@@ -98,7 +100,7 @@ function SuiteCard({ config }: { config: SuiteConfig }) {
           ))}
           {cat && cat.products.length > 5 && (
             <span className="px-2.5 py-1 rounded-full bg-accent text-muted-foreground text-xs font-medium border border-border">
-              +{cat.products.length - 5} more
+              {t("products.more_count", { count: cat.products.length - 5 })}
             </span>
           )}
         </div>
@@ -107,7 +109,7 @@ function SuiteCard({ config }: { config: SuiteConfig }) {
           to={`/products?category=${config.categorySlug}`}
           className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand-400 hover:text-brand-300 transition-colors group/link"
         >
-          Explore Suite
+          {t("products.explore_suite")}
           <ArrowRight className="h-3.5 w-3.5 group-hover/link:translate-x-1 transition-transform" />
         </Link>
       </div>
@@ -118,6 +120,7 @@ function SuiteCard({ config }: { config: SuiteConfig }) {
 export function ProductSuites() {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, margin: "-80px" });
+  const { t } = useTranslation();
 
   return (
     <section className="py-24 relative" id="product-suites">
@@ -131,13 +134,13 @@ export function ProductSuites() {
           className="text-center mb-16"
         >
           <span className="inline-block px-4 py-1.5 rounded-full bg-brand-500/10 text-brand-400 text-sm font-medium border border-brand-500/20 mb-4">
-            Our Products
+            {t("products.suites_badge")}
           </span>
           <h2 className="text-4xl sm:text-5xl font-bold text-foreground mb-4">
-            <span className="gradient-text">Enterprise Software Suites</span>
+            <span className="gradient-text">{t("products.suites_heading")}</span>
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            Battle-tested platforms powering finance, healthcare, and enterprise operations globally.
+            {t("products.suites_desc")}
           </p>
         </motion.div>
 

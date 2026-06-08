@@ -12,44 +12,47 @@ import { cn } from "@/lib/utils";
 // ─── Services mega-menu ───────────────────────────────────────────────────────
 
 function ServicesMegaMenu() {
+  const { t } = useTranslation();
+  const categories = [
+    { key: "nav.mega_industry_solutions",   href: "/services?category=industry-solutions" },
+    { key: "nav.mega_products_platforms",   href: "/services?category=products-platforms" },
+    { key: "nav.mega_research_innovation",  href: "/services?category=research-innovation" },
+    { key: "nav.mega_alliances",            href: "/services?category=alliances" },
+  ];
+  const industries = [
+    { key: "nav.mega_banking",          href: "/services/banking" },
+    { key: "nav.mega_capital_markets",  href: "/services/capital-markets" },
+    { key: "nav.mega_healthcare",       href: "/services/healthcare" },
+    { key: "nav.mega_high_tech",        href: "/services/high-tech" },
+    { key: "nav.mega_manufacturing",    href: "/services/manufacturing" },
+    { key: "nav.mega_retail",           href: "/services/retail" },
+    { key: "nav.mega_travel_logistics", href: "/services/travel-logistics" },
+  ];
   return (
     <div className="grid grid-cols-2 gap-0">
       <div className="p-4 border-r border-border">
         <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60 mb-2 px-1">
-          By Category
+          {t("nav.mega_by_category")}
         </p>
-        {[
-          { label: "Industry Solutions",    href: "/services?category=industry-solutions" },
-          { label: "Products & Platforms",  href: "/services?category=products-platforms" },
-          { label: "Research & Innovation", href: "/services?category=research-innovation" },
-          { label: "Alliances",             href: "/services?category=alliances" },
-        ].map((item) => (
-          <Link key={item.label} to={item.href}
+        {categories.map((item) => (
+          <Link key={item.key} to={item.href}
             className="block px-2 py-1.5 text-sm rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent transition-colors">
-            {item.label}
+            {t(item.key)}
           </Link>
         ))}
       </div>
       <div className="p-4">
         <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60 mb-2 px-1">
-          Industries
+          {t("nav.mega_industries")}
         </p>
-        {[
-          { label: "Banking",            href: "/services/banking" },
-          { label: "Capital Markets",    href: "/services/capital-markets" },
-          { label: "Healthcare",         href: "/services/healthcare" },
-          { label: "High Tech",          href: "/services/high-tech" },
-          { label: "Manufacturing",      href: "/services/manufacturing" },
-          { label: "Retail",             href: "/services/retail" },
-          { label: "Travel & Logistics", href: "/services/travel-logistics" },
-        ].map((item) => (
-          <Link key={item.label} to={item.href}
+        {industries.map((item) => (
+          <Link key={item.key} to={item.href}
             className="block px-2 py-1.5 text-sm rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent transition-colors">
-            {item.label}
+            {t(item.key)}
           </Link>
         ))}
         <Link to="/services" className="mt-1 block px-2 py-1.5 text-sm rounded-lg text-brand-400 hover:text-brand-300 font-medium">
-          View all →
+          {t("nav.mega_view_all")}
         </Link>
       </div>
     </div>
@@ -61,6 +64,7 @@ function ServicesMegaMenu() {
 function UserMenu({ user, logout }: { user: { first_name?: string; email?: string; role?: string } | null; logout: () => void }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const { t } = useTranslation();
 
   useEffect(() => {
     const handler = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false); };
@@ -88,17 +92,17 @@ function UserMenu({ user, logout }: { user: { first_name?: string; email?: strin
             <Link to={canAccessDashboard ? "/dashboard" : "/my-account"} onClick={() => setOpen(false)}
               className="flex items-center gap-2 px-3 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-accent transition-colors">
               <LayoutDashboard className="h-3.5 w-3.5" />
-              {canAccessDashboard ? "Dashboard" : "My Account"}
+              {canAccessDashboard ? t("dashboard.overview") : t("nav.my_account")}
             </Link>
             {canAccessDashboard && (
               <Link to="/blog/write" onClick={() => setOpen(false)}
                 className="flex items-center gap-2 px-3 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-accent transition-colors">
-                <PenLine className="h-3.5 w-3.5" /> Write a Post
+                <PenLine className="h-3.5 w-3.5" /> {t("nav.write_post")}
               </Link>
             )}
             <button onClick={() => { setOpen(false); logout(); }}
               className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors">
-              <LogOut className="h-3.5 w-3.5" /> Sign Out
+              <LogOut className="h-3.5 w-3.5" /> {t("dashboard.sign_out")}
             </button>
           </motion.div>
         )}
@@ -120,7 +124,7 @@ export function Navbar() {
   const navLinks = [
     { label: t("nav.home"),     href: "/" },
     { label: t("nav.about"),    href: "/about" },
-    { label: "Our Work",        href: "/projects" },
+    { label: t("projects.our_work"), href: "/projects" },
     { label: t("nav.blog"),     href: "/blog" },
     { label: t("nav.careers"),  href: "/careers" },
     { label: t("nav.contact"),  href: "/contact" },

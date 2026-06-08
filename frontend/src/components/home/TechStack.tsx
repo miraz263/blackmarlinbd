@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { useHomepageQuery } from "@/hooks/useHomepageQuery";
+import { useTranslation } from "@/hooks/useTranslation";
 import type { TechItem } from "@/types";
 
 const FALLBACK_TECHNOLOGIES: TechItem[] = [
@@ -23,6 +24,7 @@ const FALLBACK_TECHNOLOGIES: TechItem[] = [
 
 export function TechStack() {
   const { data } = useHomepageQuery();
+  const { t } = useTranslation();
 
   const section = data?.sections?.tech_stack;
   const items = data?.tech_items?.length ? data.tech_items : FALLBACK_TECHNOLOGIES;
@@ -31,7 +33,7 @@ export function TechStack() {
 
   const heading = section?.title
     ? section.title.toUpperCase()
-    : "BUILT WITH INDUSTRY-LEADING TECHNOLOGIES";
+    : t("home.tech_stack_heading").toUpperCase();
 
   return (
     <section className="py-16 border-y border-border bg-accent/30">

@@ -57,14 +57,17 @@ function HeroButtonLink({ btn }: { btn: HeroButton }) {
 
 export function Hero() {
   const { data } = useHomepageQuery();
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
 
   const hero = data?.hero;
   const buttons = hero?.buttons?.filter((b) => b.is_published) ?? [];
 
-  const heroBadge = hero?.badge_text  || t("hero.badge");
-  const heroTitle = hero?.title        || t("hero.title");
-  const heroDesc  = hero?.description  || t("hero.description");
+  // English: prefer CMS content so admins can customise it; fall back to i18n.
+  // Non-English: always use i18n JSON translations because the CMS falls back to
+  // English when no ContentTranslation rows exist for the current language.
+  const heroBadge = language === "en" ? (hero?.badge_text  || t("hero.badge"))       : t("hero.badge");
+  const heroTitle = language === "en" ? (hero?.title        || t("hero.title"))       : t("hero.title");
+  const heroDesc  = language === "en" ? (hero?.description  || t("hero.description")) : t("hero.description");
 
   const stats: StatisticCard[] = data?.statistics?.length
     ? data.statistics

@@ -1,6 +1,7 @@
 import { useRef } from "react";
 import { motion, useInView } from "framer-motion";
 import { Star, Quote } from "lucide-react";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface Testimonial {
   client: string;
@@ -135,6 +136,14 @@ function TestimonialCard({ testimonial }: { testimonial: Testimonial }) {
 export function CustomerSuccess() {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, margin: "-80px" });
+  const { t } = useTranslation();
+
+  const stats = [
+    { value: "150+", label: t("home.stat_enterprise_clients") },
+    { value: "99.9%", label: t("home.stat_platform_uptime") },
+    { value: "40+", label: t("home.stat_countries") },
+    { value: "4.9/5", label: t("home.stat_avg_rating") },
+  ];
 
   return (
     <section className="py-24 relative" id="customer-success">
@@ -151,14 +160,13 @@ export function CustomerSuccess() {
           className="text-center mb-16"
         >
           <span className="inline-block px-4 py-1.5 rounded-full bg-brand-500/10 text-brand-400 text-sm font-medium border border-brand-500/20 mb-4">
-            Customer Success
+            {t("home.customer_success_badge")}
           </span>
           <h2 className="text-4xl sm:text-5xl font-bold text-foreground mb-4">
-            <span className="gradient-text">Trusted by Industry Leaders</span>
+            <span className="gradient-text">{t("home.customer_success_heading")}</span>
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            Measurable outcomes from the organisations that depend on our
-            platforms every day.
+            {t("home.customer_success_desc")}
           </p>
         </motion.div>
 
@@ -183,12 +191,7 @@ export function CustomerSuccess() {
           transition={{ duration: 0.6, delay: 0.4 }}
           className="mt-14 grid grid-cols-2 sm:grid-cols-4 gap-4"
         >
-          {[
-            { value: "150+", label: "Enterprise Clients" },
-            { value: "99.9%", label: "Platform Uptime" },
-            { value: "40+", label: "Countries Served" },
-            { value: "4.9/5", label: "Average Rating" },
-          ].map((stat) => (
+          {stats.map((stat) => (
             <div
               key={stat.label}
               className="text-center p-5 rounded-xl bg-card border border-border"

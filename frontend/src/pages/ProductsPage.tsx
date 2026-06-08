@@ -13,6 +13,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 // ─── Product card ─────────────────────────────────────────────────────────────
 
 function ProductCard({ product, index }: { product: ProductDB; index: number }) {
+  const { t } = useTranslation();
   const Icon = getIcon(product.icon_name);
   return (
     <motion.div
@@ -36,7 +37,7 @@ function ProductCard({ product, index }: { product: ProductDB; index: number }) 
           <div className="flex items-center gap-2 mb-0.5 flex-wrap">
             <span className="font-semibold text-foreground group-hover:text-brand-400 transition-colors text-sm">{product.name}</span>
             {product.is_new && (
-              <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-brand-500/15 text-brand-400 border border-brand-500/30">NEW</span>
+              <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-brand-500/15 text-brand-400 border border-brand-500/30">{t("products.badge_new")}</span>
             )}
             {product.badge && (
               <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-500/15 text-amber-400 border border-amber-500/30">{product.badge}</span>
@@ -158,7 +159,7 @@ export default function ProductsPage() {
               <motion.div key={activeCategory?.slug + "-hdr"} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="flex items-center justify-between mb-5">
                 <div>
                   <h2 className="text-xl font-bold">{activeCategory?.name}</h2>
-                  <p className="text-sm text-muted-foreground">{products.length} product{products.length !== 1 ? "s" : ""}</p>
+                  <p className="text-sm text-muted-foreground">{t("products.product_count", { count: products.length })}</p>
                 </div>
               </motion.div>
 

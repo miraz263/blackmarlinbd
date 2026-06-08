@@ -45,35 +45,7 @@ function useDebounce<T>(value: T, delay: number): T {
   return debounced;
 }
 
-// ─── Fallback data (shown while API loads) ─────────────────────────────────
-
-const FALLBACK_SERVICES: ServiceListItem[] = [
-  { id: -1, title: "AI & Machine Learning", slug: "ai-ml", tagline: "Intelligent Systems at Scale",
-    short_description: "Custom LLM pipelines, RAG architectures, computer vision, and predictive analytics for production.",
-    icon_name: "Brain", gradient: "purple-brand", cover_image_url: null, category: null,
-    technologies: [{ id: -1, name: "Python", logo: "🐍", order: 0 }, { id: -2, name: "PyTorch", logo: "🔥", order: 1 }],
-    featured: true, order: 0, status: "published", views_count: 0 },
-  { id: -2, title: "Financial Systems", slug: "financial", tagline: "Sub-millisecond. Zero-error.",
-    short_description: "OMS, HFT engines, risk platforms, and real-time pipelines with institutional-grade reliability.",
-    icon_name: "BarChart3", gradient: "green-emerald", cover_image_url: null, category: null,
-    technologies: [{ id: -3, name: "Rust", logo: "⚙️", order: 0 }, { id: -4, name: "Kafka", logo: "📨", order: 1 }],
-    featured: true, order: 1, status: "published", views_count: 0 },
-  { id: -3, title: "Cloud & DevOps", slug: "cloud", tagline: "99.99% Uptime, Engineered",
-    short_description: "Multi-cloud architecture, Kubernetes, GitOps pipelines, and SRE practices.",
-    icon_name: "Cloud", gradient: "cyan-blue", cover_image_url: null, category: null,
-    technologies: [{ id: -5, name: "AWS", logo: "☁️", order: 0 }, { id: -6, name: "Kubernetes", logo: "☸️", order: 1 }],
-    featured: false, order: 2, status: "published", views_count: 0 },
-  { id: -4, title: "Web & Mobile Apps", slug: "web-mobile", tagline: "Pixel-perfect. Blazing fast.",
-    short_description: "React, Next.js, Flutter, and React Native applications at any scale.",
-    icon_name: "Globe", gradient: "orange-pink", cover_image_url: null, category: null,
-    technologies: [{ id: -7, name: "React", logo: "⚛️", order: 0 }, { id: -8, name: "Flutter", logo: "📱", order: 1 }],
-    featured: false, order: 3, status: "published", views_count: 0 },
-  { id: -5, title: "Cybersecurity", slug: "security", tagline: "Secure by Design",
-    short_description: "Pen testing, zero-trust architecture, SOC 2 / ISO 27001 compliance.",
-    icon_name: "ShieldCheck", gradient: "red-rose", cover_image_url: null, category: null,
-    technologies: [{ id: -9, name: "OWASP", logo: "🛡️", order: 0 }, { id: -10, name: "Vault", logo: "🔒", order: 1 }],
-    featured: false, order: 4, status: "published", views_count: 0 },
-];
+// FALLBACK_SERVICES is built inside the component so titles/taglines go through t()
 
 // ─── Service Card ──────────────────────────────────────────────────────────
 
@@ -172,6 +144,34 @@ function ServiceCard({ service, index, exploreLabel, featuredLabel }: { service:
 
 export default function ServicesPage() {
   const { t } = useTranslation();
+
+  const FALLBACK_SERVICES: ServiceListItem[] = [
+    { id: -1, title: t("services.s_ai_title"),    slug: "ai-ml",      tagline: t("services.s_ai_tagline"),
+      short_description: t("services.s_ai_desc"),
+      icon_name: "Brain",      gradient: "purple-brand",  cover_image_url: null, category: null,
+      technologies: [{ id: -1, name: "Python", logo: "🐍", order: 0 }, { id: -2, name: "PyTorch", logo: "🔥", order: 1 }],
+      featured: true,  order: 0, status: "published", views_count: 0 },
+    { id: -2, title: t("services.s_fin_title"),   slug: "financial",  tagline: t("services.s_fin_tagline"),
+      short_description: t("services.s_fin_desc"),
+      icon_name: "BarChart3",  gradient: "green-emerald", cover_image_url: null, category: null,
+      technologies: [{ id: -3, name: "Rust", logo: "⚙️", order: 0 }, { id: -4, name: "Kafka", logo: "📨", order: 1 }],
+      featured: true,  order: 1, status: "published", views_count: 0 },
+    { id: -3, title: t("services.s_cloud_title"), slug: "cloud",      tagline: t("services.s_cloud_tagline"),
+      short_description: t("services.s_cloud_desc"),
+      icon_name: "Cloud",      gradient: "cyan-blue",     cover_image_url: null, category: null,
+      technologies: [{ id: -5, name: "AWS", logo: "☁️", order: 0 }, { id: -6, name: "Kubernetes", logo: "☸️", order: 1 }],
+      featured: false, order: 2, status: "published", views_count: 0 },
+    { id: -4, title: t("services.s_web_title"),   slug: "web-mobile", tagline: t("services.s_web_tagline"),
+      short_description: t("services.s_web_desc"),
+      icon_name: "Globe",      gradient: "orange-pink",   cover_image_url: null, category: null,
+      technologies: [{ id: -7, name: "React", logo: "⚛️", order: 0 }, { id: -8, name: "Flutter", logo: "📱", order: 1 }],
+      featured: false, order: 3, status: "published", views_count: 0 },
+    { id: -5, title: t("services.s_cyber_title"), slug: "security",   tagline: t("services.s_cyber_tagline"),
+      short_description: t("services.s_cyber_desc"),
+      icon_name: "ShieldCheck", gradient: "red-rose",     cover_image_url: null, category: null,
+      technologies: [{ id: -9, name: "OWASP", logo: "🛡️", order: 0 }, { id: -10, name: "Vault", logo: "🔒", order: 1 }],
+      featured: false, order: 4, status: "published", views_count: 0 },
+  ];
   const [searchParams, setSearchParams] = useSearchParams();
   const [search,      setSearch]      = useState("");
   const [activeCategory, setCategory] = useState<string>(searchParams.get("category") ?? "all");
@@ -329,7 +329,7 @@ export default function ServicesPage() {
           {/* ── Results count ───────────────────────────────────────────── */}
           <div className="flex items-center justify-between mb-6">
             <p className="text-sm text-muted-foreground">
-              {servicesLoading ? t("common.loading") : `${displayedServices.length} service${displayedServices.length !== 1 ? "s" : ""}`}
+              {servicesLoading ? t("common.loading") : t("services_page.result_count", { count: displayedServices.length })}
             </p>
             {(search || activeCategory !== "all" || featuredOnly) && (
               <button

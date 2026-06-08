@@ -9,6 +9,7 @@ import { Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { authApi } from "@/services/api/auth";
 import { useAuthStore } from "@/store/authStore";
+import { useTranslation } from "@/hooks/useTranslation";
 
 const schema = z
   .object({
@@ -35,6 +36,7 @@ export default function RegisterPage() {
   const [error, setError] = useState("");
   const navigate = useNavigate();
   const { fetchMe } = useAuthStore();
+  const { t } = useTranslation();
 
   const {
     register,
@@ -53,9 +55,9 @@ export default function RegisterPage() {
       const detail = e?.response?.data;
       if (detail) {
         const first = Object.values(detail).flat()[0];
-        setError(first ?? "Registration failed. Please try again.");
+        setError(first ?? t("auth.register_failed"));
       } else {
-        setError("Registration failed. Please try again.");
+        setError(t("auth.register_failed"));
       }
     }
   };
@@ -78,8 +80,8 @@ export default function RegisterPage() {
                 <span className="text-white font-bold">BM</span>
               </div>
             </Link>
-            <h1 className="text-3xl font-bold mb-2">Create an account</h1>
-            <p className="text-muted-foreground text-sm">Join BlackMarlinBD — it's free</p>
+            <h1 className="text-3xl font-bold mb-2">{t("auth.create_account")}</h1>
+            <p className="text-muted-foreground text-sm">{t("auth.join_free")}</p>
           </div>
 
           <div className="p-8 rounded-2xl bg-card border border-border">
@@ -90,10 +92,9 @@ export default function RegisterPage() {
             )}
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-              {/* Name row */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-sm font-medium mb-1.5">First Name</label>
+                  <label className="block text-sm font-medium mb-1.5">{t("auth.first_name")}</label>
                   <input
                     {...register("first_name")}
                     type="text"
@@ -105,7 +106,7 @@ export default function RegisterPage() {
                   )}
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1.5">Last Name</label>
+                  <label className="block text-sm font-medium mb-1.5">{t("auth.last_name")}</label>
                   <input
                     {...register("last_name")}
                     type="text"
@@ -118,9 +119,8 @@ export default function RegisterPage() {
                 </div>
               </div>
 
-              {/* Username */}
               <div>
-                <label className="block text-sm font-medium mb-1.5">Username</label>
+                <label className="block text-sm font-medium mb-1.5">{t("auth.username")}</label>
                 <input
                   {...register("username")}
                   type="text"
@@ -132,9 +132,8 @@ export default function RegisterPage() {
                 )}
               </div>
 
-              {/* Email */}
               <div>
-                <label className="block text-sm font-medium mb-1.5">Email</label>
+                <label className="block text-sm font-medium mb-1.5">{t("auth.email")}</label>
                 <input
                   {...register("email")}
                   type="email"
@@ -146,14 +145,13 @@ export default function RegisterPage() {
                 )}
               </div>
 
-              {/* Password */}
               <div>
-                <label className="block text-sm font-medium mb-1.5">Password</label>
+                <label className="block text-sm font-medium mb-1.5">{t("auth.password")}</label>
                 <div className="relative">
                   <input
                     {...register("password")}
                     type={showPassword ? "text" : "password"}
-                    placeholder="Min. 8 characters"
+                    placeholder={t("auth.password_min")}
                     className="w-full px-4 py-2.5 pr-10 rounded-xl bg-background border border-border text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                   />
                   <button
@@ -169,14 +167,13 @@ export default function RegisterPage() {
                 )}
               </div>
 
-              {/* Confirm Password */}
               <div>
-                <label className="block text-sm font-medium mb-1.5">Confirm Password</label>
+                <label className="block text-sm font-medium mb-1.5">{t("auth.confirm_password")}</label>
                 <div className="relative">
                   <input
                     {...register("password2")}
                     type={showConfirm ? "text" : "password"}
-                    placeholder="Repeat password"
+                    placeholder={t("auth.repeat_password")}
                     className="w-full px-4 py-2.5 pr-10 rounded-xl bg-background border border-border text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                   />
                   <button
@@ -193,14 +190,14 @@ export default function RegisterPage() {
               </div>
 
               <Button type="submit" variant="gradient" className="w-full" size="lg" loading={isSubmitting}>
-                Create Account
+                {t("auth.create_account_btn")}
               </Button>
             </form>
 
             <p className="text-center text-sm text-muted-foreground mt-6">
-              Already have an account?{" "}
+              {t("auth.already_account")}{" "}
               <Link to="/login" className="text-brand-400 hover:text-brand-300 font-medium">
-                Sign in
+                {t("nav.login")}
               </Link>
             </p>
           </div>

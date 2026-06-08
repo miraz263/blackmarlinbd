@@ -345,6 +345,7 @@ function Screenshot({ label, photoId }: { label: string; photoId: string }) {
 }
 
 function PricingCard({ plan }: { plan: ProductExtended["pricing"][number] }) {
+  const { t } = useTranslation();
   return (
     <div className={`rounded-2xl p-6 flex flex-col h-full border transition-all duration-200 ${
       plan.highlight
@@ -353,7 +354,7 @@ function PricingCard({ plan }: { plan: ProductExtended["pricing"][number] }) {
     }`}>
       {plan.highlight && (
         <div className="flex items-center gap-1 text-xs font-semibold text-brand-200 mb-2">
-          <Star className="h-3.5 w-3.5 fill-current" /> Most Popular
+          <Star className="h-3.5 w-3.5 fill-current" /> {t("products.most_popular")}
         </div>
       )}
       <h3 className={`font-bold text-lg mb-1 ${plan.highlight ? "text-white" : "text-foreground"}`}>{plan.name}</h3>
@@ -428,7 +429,7 @@ export default function ProductDetailPage() {
           <div className="container mx-auto px-4 py-20 relative">
             {/* Breadcrumb */}
             <div className="flex items-center gap-2 text-xs text-muted-foreground mb-8 flex-wrap">
-              <Link to="/products" className="hover:text-brand-400 transition-colors">Products</Link>
+              <Link to="/products" className="hover:text-brand-400 transition-colors">{t("nav.products")}</Link>
               <span>/</span>
               <span className="text-muted-foreground">{category.label}</span>
               <span>/</span>
@@ -446,7 +447,7 @@ export default function ProductDetailPage() {
                 </div>
 
                 <div className="flex items-center gap-2 mb-3 flex-wrap">
-                  {product.isNew && <span className="px-2 py-0.5 rounded text-xs font-bold bg-brand-500/15 text-brand-400 border border-brand-500/30">NEW</span>}
+                  {product.isNew && <span className="px-2 py-0.5 rounded text-xs font-bold bg-brand-500/15 text-brand-400 border border-brand-500/30">{t("products.badge_new")}</span>}
                   {product.badge && <span className="px-2 py-0.5 rounded text-xs font-bold bg-amber-500/15 text-amber-400 border border-amber-500/30">{product.badge}</span>}
                   <span className="px-2 py-0.5 rounded-full text-xs bg-accent text-muted-foreground">{category.label}</span>
                 </div>
@@ -457,10 +458,10 @@ export default function ProductDetailPage() {
 
                 <div className="flex flex-wrap gap-3">
                   <Link to="/contact" className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-brand-500 to-cyan-500 text-white font-semibold hover:opacity-90 transition-opacity">
-                    <Play className="h-4 w-4 fill-current" /> Request Demo
+                    <Play className="h-4 w-4 fill-current" /> {t("products.request_demo_btn")}
                   </Link>
                   <Link to="/contact" className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-card border border-border font-semibold hover:border-brand-500/50 transition-colors">
-                    <Phone className="h-4 w-4" /> Talk to Sales
+                    <Phone className="h-4 w-4" /> {t("products.talk_sales")}
                   </Link>
                 </div>
               </motion.div>

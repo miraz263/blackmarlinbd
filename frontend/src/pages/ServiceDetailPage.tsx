@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { servicesService, servicesKeys } from "@/services/serviceService";
+import { useTranslation } from "@/hooks/useTranslation";
 
 // ─── Maps ──────────────────────────────────────────────────────────────────
 
@@ -40,7 +41,6 @@ function BodyContent({ body }: { body: string }) {
   return (
     <div className="space-y-5">
       {paragraphs.map((para, i) => {
-        // H2 heading
         if (para.startsWith("## ")) {
           return (
             <h2 key={i} className="text-2xl font-bold text-foreground mt-8 first:mt-0">
@@ -48,7 +48,6 @@ function BodyContent({ body }: { body: string }) {
             </h2>
           );
         }
-        // H3 heading
         if (para.startsWith("### ")) {
           return (
             <h3 key={i} className="text-lg font-semibold text-foreground mt-6 first:mt-0">
@@ -56,7 +55,6 @@ function BodyContent({ body }: { body: string }) {
             </h3>
           );
         }
-        // Unordered list block (lines starting with "- ")
         if (para.split("\n").every((l) => l.startsWith("- ") || l === "")) {
           const items = para.split("\n").filter((l) => l.startsWith("- ")).map((l) => l.slice(2));
           return (
@@ -100,6 +98,7 @@ function Skeleton() {
 
 export default function ServiceDetailPage() {
   const { slug } = useParams<{ slug: string }>();
+  const { t } = useTranslation();
 
   const { data: service, isLoading, isError } = useQuery({
     queryKey: servicesKeys.detail(slug ?? ""),
@@ -114,12 +113,10 @@ export default function ServiceDetailPage() {
     return (
       <main className="pt-28 pb-24 text-center">
         <div className="container mx-auto px-4">
-          <h1 className="text-4xl font-bold mb-4">Service not found</h1>
-          <p className="text-muted-foreground mb-8">
-            This service doesn't exist or has been removed.
-          </p>
+          <h1 className="text-4xl font-bold mb-4">{t("services.not_found")}</h1>
+          <p className="text-muted-foreground mb-8">{t("services.not_found_desc")}</p>
           <Link to="/services">
-            <Button variant="outline">← Back to Services</Button>
+            <Button variant="outline">← {t("services.back_to_services") || t("services.all_services")}</Button>
           </Link>
         </div>
       </main>
@@ -184,7 +181,7 @@ export default function ServiceDetailPage() {
                 {/* Breadcrumb */}
                 <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
                   <Link to="/services" className="hover:text-brand-400 transition-colors">
-                    Services
+                    {t("nav.services")}
                   </Link>
                   <span>/</span>
                   {service.category && (
@@ -217,12 +214,12 @@ export default function ServiceDetailPage() {
                   {service.views_count > 0 && (
                     <span className="flex items-center gap-1.5">
                       <Eye className="h-3.5 w-3.5" />
-                      {service.views_count.toLocaleString()} views
+                      {service.views_count.toLocaleString()} {t("services.views")}
                     </span>
                   )}
                   {service.featured && (
                     <span className="px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-500 text-xs font-medium">
-                      ★ Featured
+                      ★ {t("services_page.featured_badge")}
                     </span>
                   )}
                 </div>
@@ -255,7 +252,7 @@ export default function ServiceDetailPage() {
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                   >
-                    <h2 className="text-2xl font-bold mb-6">What We Deliver</h2>
+                    <h2 className="text-2xl font-bold mb-6">{t("services.what_we_deliver")}</h2>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       {service.capabilities.map((cap, i) => (
                         <div
@@ -290,7 +287,7 @@ export default function ServiceDetailPage() {
                     viewport={{ once: true }}
                     className="border-t border-border pt-10"
                   >
-                    <h2 className="text-2xl font-bold mb-8">Case Studies</h2>
+                    <h2 className="text-2xl font-bold mb-8">{t("services.case_studies_heading")}</h2>
                     <div className="space-y-6">
                       {service.case_studies.map((cs) => (
                         <article
@@ -307,25 +304,25 @@ export default function ServiceDetailPage() {
                           <h3 className="font-bold text-lg mb-1">{cs.title}</h3>
                           {cs.client_name && (
                             <p className="text-xs text-muted-foreground mb-4">
-                              Client: {cs.client_name}
+                              {t("services.client_label")}: {cs.client_name}
                             </p>
                           )}
                           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                             {cs.challenge && (
                               <div>
-                                <p className="text-xs font-semibold text-brand-400 uppercase tracking-widest mb-1">Challenge</p>
+                                <p className="text-xs font-semibold text-brand-400 uppercase tracking-widest mb-1">{t("services.challenge")}</p>
                                 <p className="text-sm text-muted-foreground">{cs.challenge}</p>
                               </div>
                             )}
                             {cs.solution && (
                               <div>
-                                <p className="text-xs font-semibold text-brand-400 uppercase tracking-widest mb-1">Solution</p>
+                                <p className="text-xs font-semibold text-brand-400 uppercase tracking-widest mb-1">{t("services.solution")}</p>
                                 <p className="text-sm text-muted-foreground">{cs.solution}</p>
                               </div>
                             )}
                             {cs.results && (
                               <div>
-                                <p className="text-xs font-semibold text-brand-400 uppercase tracking-widest mb-1">Results</p>
+                                <p className="text-xs font-semibold text-brand-400 uppercase tracking-widest mb-1">{t("services.results")}</p>
                                 <p className="text-sm text-muted-foreground">{cs.results}</p>
                               </div>
                             )}
@@ -344,13 +341,13 @@ export default function ServiceDetailPage() {
                 <div
                   className={`p-6 rounded-2xl border ${g.border} bg-gradient-to-br from-card to-card/50`}
                 >
-                  <h3 className="font-bold text-lg mb-2">Ready to start?</h3>
+                  <h3 className="font-bold text-lg mb-2">{t("services.ready_to_start")}</h3>
                   <p className="text-sm text-muted-foreground mb-5">
-                    Tell us about your project and we'll build a tailored proposal.
+                    {t("services.ready_to_start_desc")}
                   </p>
                   <Link to="/contact" className="block">
                     <Button variant="gradient" className="w-full group">
-                      Discuss Your Project
+                      {t("services.discuss_project")}
                       <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
                     </Button>
                   </Link>
@@ -360,16 +357,16 @@ export default function ServiceDetailPage() {
                 {service.technologies.length > 0 && (
                   <div className="p-6 rounded-2xl bg-card border border-border">
                     <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-widest mb-4">
-                      Tech Stack
+                      {t("services.tech_stack")}
                     </h3>
                     <div className="flex flex-wrap gap-2">
-                      {service.technologies.map((t) => (
+                      {service.technologies.map((tech) => (
                         <span
-                          key={t.id}
+                          key={tech.id}
                           className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-accent text-accent-foreground text-xs font-medium"
                         >
-                          {t.logo && <span>{t.logo}</span>}
-                          {t.name}
+                          {tech.logo && <span>{tech.logo}</span>}
+                          {tech.name}
                         </span>
                       ))}
                     </div>
@@ -380,7 +377,7 @@ export default function ServiceDetailPage() {
                 {service.category && (
                   <div className="p-6 rounded-2xl bg-card border border-border">
                     <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-widest mb-3">
-                      Category
+                      {t("services.category_label")}
                     </h3>
                     <span
                       className="px-3 py-1.5 rounded-full text-sm font-medium"
@@ -405,7 +402,7 @@ export default function ServiceDetailPage() {
                   className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
                 >
                   <ArrowLeft className="h-4 w-4" />
-                  All Services
+                  {t("services.all_services")}
                 </Link>
               </aside>
             </div>
