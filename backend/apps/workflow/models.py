@@ -164,8 +164,15 @@ class ContentReview(TimeStampedModel):
         if obj is None:
             return
         is_published = self.status == ContentStatus.PUBLISHED
-        if hasattr(obj, "is_published") and obj.is_published != is_published:
-            type(obj).objects.filter(pk=obj.pk).update(is_published=is_published)
+        if hasattr(obj, "is_published"):
+            if obj.is_published != is_published:
+                type(obj).objects.filter(pk=obj.pk).update(is_published=is_published)
+        elif hasattr(obj, "status") and hasattr(getattr(obj, "Status", None), "PUBLISHED"):
+            # Status-choice models (e.g. BlogPost: draft/published/scheduled)
+            update_fields = {"status": obj.Status.PUBLISHED if is_published else obj.Status.DRAFT}
+            if is_published and hasattr(obj, "published_at"):
+                update_fields["published_at"] = timezone.now()
+            type(obj).objects.filter(pk=obj.pk).update(**update_fields)
 
     def _notify(self, to_status: str, from_status: str, actor):
         verb_map = {

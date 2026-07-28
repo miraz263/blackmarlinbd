@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { blogApi } from "@/services/api/blog";
 import { useAuthStore } from "@/store/authStore";
+import { WorkflowStatusPanel } from "@/components/workflow/WorkflowStatusPanel";
 import type { BlogPost, BlogCategory } from "@/types";
 import { cn } from "@/lib/utils";
 
@@ -31,8 +32,10 @@ const SUGGESTED_TAGS = [
 
 function useWriteAccess() {
   const { user, isAuthenticated } = useAuthStore();
-  const canWrite = isAuthenticated && (user?.role === "admin" || user?.role === "editor");
-  return canWrite;
+  const isEditor = user?.role === "admin" || user?.role === "editor";
+  // Any signed-in user can write — non-editors just need admin approval before it's published.
+  const canWrite = isAuthenticated;
+  return { canWrite, isEditor };
 }
 
 // ─── Cover image picker ─────────────────────────────────────────────────────
@@ -202,7 +205,7 @@ export default function BlogWritePage() {
   const navigate     = useNavigate();
   const [params]     = useSearchParams();
   const editSlug     = params.get("edit");
-  const canWrite     = useWriteAccess();
+  const { canWrite, isEditor } = useWriteAccess();
   const qc           = useQueryClient();
 
   const [form, setForm]       = useState<FormState>(EMPTY);
@@ -317,9 +320,9 @@ export default function BlogWritePage() {
           <div className="w-20 h-20 rounded-3xl bg-red-500/10 flex items-center justify-center mx-auto mb-6">
             <BookOpen className="h-10 w-10 text-red-400" />
           </div>
-          <h1 className="text-2xl font-bold mb-2">Access Restricted</h1>
+          <h1 className="text-2xl font-bold mb-2">Sign In Required</h1>
           <p className="text-muted-foreground mb-6">
-            You need to be logged in as an admin or editor to write blog posts.
+            You need to be logged in to write a blog post.
           </p>
           <Link to="/login"
             className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-brand-500 text-white font-semibold hover:bg-brand-600 transition-colors">
@@ -352,16 +355,18 @@ export default function BlogWritePage() {
             {/* Status + Actions */}
             <div className="flex items-center gap-2 shrink-0">
               {/* Status indicator */}
-              <span className={cn(
-                "hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium border",
-                form.status === "published"
-                  ? "bg-green-500/10 text-green-500 border-green-500/20"
-                  : "bg-amber-500/10 text-amber-500 border-amber-500/20"
-              )}>
-                {form.status === "published"
-                  ? <><CheckCircle2 className="h-3 w-3" /> Published</>
-                  : <><Clock className="h-3 w-3" /> Draft</>}
-              </span>
+              {isEditor && (
+                <span className={cn(
+                  "hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium border",
+                  form.status === "published"
+                    ? "bg-green-500/10 text-green-500 border-green-500/20"
+                    : "bg-amber-500/10 text-amber-500 border-amber-500/20"
+                )}>
+                  {form.status === "published"
+                    ? <><CheckCircle2 className="h-3 w-3" /> Published</>
+                    : <><Clock className="h-3 w-3" /> Draft</>}
+                </span>
+              )}
 
               {saved && (
                 <motion.span
@@ -392,17 +397,19 @@ export default function BlogWritePage() {
                 <span className="hidden sm:inline">Save Draft</span>
               </button>
 
-              {/* Publish */}
-              <button
-                onClick={() => { setError(""); saveMut.mutate("published"); }}
-                disabled={!isValid || saveMut.isPending}
-                className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-brand-500 text-white text-sm font-semibold hover:bg-brand-600 disabled:opacity-40 transition-all shadow-md shadow-brand-500/20"
-              >
-                {saveMut.isPending && saveMut.variables === "published"
-                  ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                  : <Send className="h-3.5 w-3.5" />}
-                Publish
-              </button>
+              {/* Publish — editors/admins only; others submit for review instead */}
+              {isEditor && (
+                <button
+                  onClick={() => { setError(""); saveMut.mutate("published"); }}
+                  disabled={!isValid || saveMut.isPending}
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-brand-500 text-white text-sm font-semibold hover:bg-brand-600 disabled:opacity-40 transition-all shadow-md shadow-brand-500/20"
+                >
+                  {saveMut.isPending && saveMut.variables === "published"
+                    ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    : <Send className="h-3.5 w-3.5" />}
+                  Publish
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -496,29 +503,41 @@ export default function BlogWritePage() {
           {/* ── Sidebar (1/3) ────────────────────────────────────────── */}
           <aside className="space-y-4 lg:sticky lg:top-36 lg:self-start">
 
-            {/* Publishing */}
-            <SideSection title="Publishing" icon={Send}>
-              <div>
-                <label className="text-xs font-medium text-muted-foreground block mb-1.5">Status</label>
-                <select value={form.status} onChange={(e) => set("status", e.target.value as BlogPost["status"])}
-                  style={{ colorScheme: "dark" }} className={inputCls}>
-                  <option value="draft">Draft</option>
-                  <option value="published">Published</option>
-                  <option value="scheduled">Scheduled</option>
-                </select>
-              </div>
-
-              <div className="flex items-center justify-between p-3 rounded-xl border border-border bg-background/50">
+            {isEditor ? (
+              /* Publishing — editors/admins publish directly */
+              <SideSection title="Publishing" icon={Send}>
                 <div>
-                  <p className="text-sm font-medium">Featured Post</p>
-                  <p className="text-[11px] text-muted-foreground">Show in featured section</p>
+                  <label className="text-xs font-medium text-muted-foreground block mb-1.5">Status</label>
+                  <select value={form.status} onChange={(e) => set("status", e.target.value as BlogPost["status"])}
+                    style={{ colorScheme: "dark" }} className={inputCls}>
+                    <option value="draft">Draft</option>
+                    <option value="published">Published</option>
+                    <option value="scheduled">Scheduled</option>
+                  </select>
                 </div>
-                <button type="button" onClick={() => set("is_featured", !form.is_featured)}
-                  className={cn("relative w-10 h-5 rounded-full transition-colors shrink-0", form.is_featured ? "bg-brand-500" : "bg-muted")}>
-                  <div className={cn("absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-all", form.is_featured ? "left-5" : "left-0.5")} />
-                </button>
+
+                <div className="flex items-center justify-between p-3 rounded-xl border border-border bg-background/50">
+                  <div>
+                    <p className="text-sm font-medium">Featured Post</p>
+                    <p className="text-[11px] text-muted-foreground">Show in featured section</p>
+                  </div>
+                  <button type="button" onClick={() => set("is_featured", !form.is_featured)}
+                    className={cn("relative w-10 h-5 rounded-full transition-colors shrink-0", form.is_featured ? "bg-brand-500" : "bg-muted")}>
+                    <div className={cn("absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-all", form.is_featured ? "left-5" : "left-0.5")} />
+                  </button>
+                </div>
+              </SideSection>
+            ) : existingPost?.id ? (
+              /* Everyone else submits the draft for admin review */
+              <WorkflowStatusPanel appLabel="blog" modelName="blogpost" objectId={existingPost.id} />
+            ) : (
+              <div className="rounded-xl border border-dashed border-border bg-card/50 p-4 text-center">
+                <Clock className="h-5 w-5 text-muted-foreground mx-auto mb-2" />
+                <p className="text-xs text-muted-foreground">
+                  Save your draft first — you'll be able to submit it for admin review here.
+                </p>
               </div>
-            </SideSection>
+            )}
 
             {/* Category & Tags */}
             <SideSection title="Category & Tags" icon={Tag}>
@@ -608,16 +627,18 @@ export default function BlogWritePage() {
 
             {/* Bottom action buttons */}
             <div className="flex flex-col gap-2">
-              <button
-                onClick={() => { setError(""); saveMut.mutate("published"); }}
-                disabled={!isValid || saveMut.isPending}
-                className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-brand-500 text-white font-semibold hover:bg-brand-600 disabled:opacity-40 transition-all shadow-lg shadow-brand-500/20"
-              >
-                {saveMut.isPending && saveMut.variables === "published"
-                  ? <Loader2 className="h-4 w-4 animate-spin" />
-                  : <Send className="h-4 w-4" />}
-                Publish Post
-              </button>
+              {isEditor && (
+                <button
+                  onClick={() => { setError(""); saveMut.mutate("published"); }}
+                  disabled={!isValid || saveMut.isPending}
+                  className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-brand-500 text-white font-semibold hover:bg-brand-600 disabled:opacity-40 transition-all shadow-lg shadow-brand-500/20"
+                >
+                  {saveMut.isPending && saveMut.variables === "published"
+                    ? <Loader2 className="h-4 w-4 animate-spin" />
+                    : <Send className="h-4 w-4" />}
+                  Publish Post
+                </button>
+              )}
               <button
                 onClick={() => { setError(""); saveMut.mutate("draft"); }}
                 disabled={!isValid || saveMut.isPending}
@@ -628,6 +649,13 @@ export default function BlogWritePage() {
                   : <Save className="h-3.5 w-3.5" />}
                 Save as Draft
               </button>
+              {!isEditor && (
+                <p className="text-[11px] text-muted-foreground text-center px-2">
+                  {existingPost?.id
+                    ? "Ready? Submit it for review from the panel above."
+                    : "Save a draft, then submit it for admin review."}
+                </p>
+              )}
             </div>
 
           </aside>

@@ -3,6 +3,7 @@ from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 from rest_framework import generics, permissions, filters, status
+from rest_framework.permissions import SAFE_METHODS, BasePermission
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 
@@ -14,6 +15,20 @@ from .serializers import (
 from apps.core.permissions import IsEditorOrReadOnly
 
 
+class IsAuthorOrEditorOrReadOnly(BasePermission):
+    """Read for everyone; write for editors/admins, or for the post's own author."""
+
+    def has_permission(self, request, view):
+        if request.method in SAFE_METHODS:
+            return True
+        return request.user.is_authenticated
+
+    def has_object_permission(self, request, view, obj):
+        if request.method in SAFE_METHODS:
+            return True
+        return request.user.is_editor or obj.author_id == request.user.id
+
+
 class BlogCategoryListView(generics.ListCreateAPIView):
     serializer_class = BlogCategorySerializer
     permission_classes = [IsEditorOrReadOnly]
@@ -23,7 +38,7 @@ class BlogCategoryListView(generics.ListCreateAPIView):
 
 
 class BlogPostListView(generics.ListCreateAPIView):
-    permission_classes = [IsEditorOrReadOnly]
+    permission_classes = [IsAuthorOrEditorOrReadOnly]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ["category__slug", "is_featured", "status"]
     search_fields = ["title", "excerpt", "content"]
@@ -43,14 +58,20 @@ class BlogPostListView(generics.ListCreateAPIView):
 
     def perform_create(self, serializer):
         data = {}
-        if serializer.validated_data.get("status") == BlogPost.Status.PUBLISHED:
+        status_value = serializer.validated_data.get("status")
+        # Non-editors can only ever create drafts — actual publishing happens
+        # once an admin approves the post through the review workflow.
+        if not self.request.user.is_editor:
+            status_value = BlogPost.Status.DRAFT
+            serializer.validated_data["is_featured"] = False
+        if status_value == BlogPost.Status.PUBLISHED:
             data["published_at"] = timezone.now()
-        serializer.save(author=self.request.user, **data)
+        serializer.save(author=self.request.user, status=status_value, **data)
 
 
 class BlogPostDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = BlogPostDetailSerializer
-    permission_classes = [IsEditorOrReadOnly]
+    permission_classes = [IsAuthorOrEditorOrReadOnly]
     lookup_field = "slug"
 
     def get_queryset(self):
@@ -61,6 +82,15 @@ class BlogPostDetailView(generics.RetrieveUpdateDestroyAPIView):
         instance.increment_views()
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
+
+    def perform_update(self, serializer):
+        # Non-editors can edit their own post's content but can't self-publish
+        # or feature it — that still requires admin approval via the workflow.
+        if not self.request.user.is_editor:
+            serializer.validated_data["is_featured"] = False
+            if serializer.validated_data.get("status") == BlogPost.Status.PUBLISHED:
+                serializer.validated_data["status"] = BlogPost.Status.DRAFT
+        serializer.save()
 
 
 class FeaturedPostsView(generics.ListAPIView):
