@@ -8,6 +8,7 @@ const LANGUAGES: { code: SupportedLanguage; flag: string; short: string; label: 
   { code: "ar", flag: "🇸🇦", short: "AR",  label: "العربية"    },
   { code: "fr", flag: "🇫🇷", short: "FR",  label: "Français"   },
   { code: "es", flag: "🇪🇸", short: "ES",  label: "Español"    },
+  { code: "zh", flag: "🇨🇳", short: "中文", label: "中文"        },
 ];
 
 interface LanguageSwitcherProps {

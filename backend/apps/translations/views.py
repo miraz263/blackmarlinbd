@@ -5,6 +5,8 @@ from rest_framework.views import APIView
 
 from apps.rbac.permissions import rbac_permission
 
+from .geo import get_client_ip, resolve_language_from_ip
+from .middleware import FALLBACK_CODES
 from .models import ContentTranslation, Language, UITranslation
 from .registry import TRANSLATABLE_MODELS, get_translatable_field_names, is_long_field
 from .serializers import (
@@ -16,6 +18,22 @@ from .serializers import (
 
 
 # ─── Languages ───────────────────────────────────────────────────────────────
+
+
+class GeoLanguageView(APIView):
+    """Public — best-effort language suggestion based on visitor IP.
+
+    Intended for a one-time check on first visit only: the frontend must
+    never let this override an explicit user choice, only seed the initial
+    default for a brand-new visitor.
+    """
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        active = set(Language.objects.filter(is_active=True).values_list("code", flat=True)) or FALLBACK_CODES
+        ip = get_client_ip(request)
+        language, country = resolve_language_from_ip(ip, active)
+        return Response({"language": language, "country": country})
 
 
 class LanguageListView(APIView):

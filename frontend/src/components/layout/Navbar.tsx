@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, Moon, Sun, ChevronDown, LayoutDashboard, LogOut, PenLine } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LanguageSwitcher } from "@/components/ui/LanguageSwitcher";
+import { AccentColorPicker } from "@/components/ui/AccentColorPicker";
 import { useThemeStore } from "@/store/themeStore";
 import { useAuthStore } from "@/store/authStore";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -227,6 +228,7 @@ export function Navbar() {
 
           {/* Right actions */}
           <div className="flex items-center gap-2">
+            <AccentColorPicker className="hidden lg:flex" />
             <LanguageSwitcher variant="flags" className="hidden lg:flex" />
             <button
               onClick={toggleTheme}
@@ -288,6 +290,7 @@ export function Navbar() {
                 {t("nav.services")}
               </Link>
               <div className="mt-4 flex flex-col gap-2">
+                <AccentColorPicker className="px-1" />
                 <LanguageSwitcher variant="pills" />
                 <Link to="/login"><Button variant="outline" className="w-full">{t("nav.login")}</Button></Link>
                 <Link to="/contact"><Button variant="gradient" className="w-full">{t("services.get_started")}</Button></Link>

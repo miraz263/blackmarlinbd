@@ -12,7 +12,7 @@
     --card-foreground: 222.2 84% 4.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
-    --primary: 239 84% 67%;
+    --primary: var(--brand-500);
     --primary-foreground: 0 0% 100%;
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 222.2 47.4% 11.2%;
@@ -24,8 +24,70 @@
     --destructive-foreground: 210 40% 98%;
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 239 84% 67%;
+    --ring: var(--brand-500);
     --radius: 0.75rem;
+
+    /* Accent color scale — default (indigo). Overridden by .theme-pink /
+       .theme-purple / .theme-green below when the user picks a different
+       accent color. --primary/--ring above derive from --brand-500 so
+       switching the scale restyles buttons, links, and focus rings too. */
+    --brand-50:  226 100% 97%;
+    --brand-100: 226 100% 94%;
+    --brand-200: 228 96% 89%;
+    --brand-300: 230 94% 82%;
+    --brand-400: 234 89% 74%;
+    --brand-500: 239 84% 67%;
+    --brand-600: 243 75% 59%;
+    --brand-700: 245 58% 51%;
+    --brand-800: 244 55% 41%;
+    --brand-900: 242 47% 34%;
+    --brand-950: 244 47% 20%;
+  }
+
+  /* ── Accent color themes ──────────────────────────────────────────────
+     Applied as a class on <html> alongside .light/.dark (see themeStore.ts).
+     Each only needs to override the brand scale — --primary/--ring inherit
+     it automatically via var(--brand-500) in :root above. */
+  .theme-pink {
+    --brand-50:  327 73% 97%;
+    --brand-100: 326 78% 95%;
+    --brand-200: 326 85% 90%;
+    --brand-300: 327 87% 82%;
+    --brand-400: 329 86% 70%;
+    --brand-500: 330 81% 60%;
+    --brand-600: 333 71% 51%;
+    --brand-700: 335 78% 42%;
+    --brand-800: 336 74% 35%;
+    --brand-900: 336 69% 30%;
+    --brand-950: 336 84% 17%;
+  }
+
+  .theme-purple {
+    --brand-50:  270 100% 98%;
+    --brand-100: 269 100% 95%;
+    --brand-200: 269 100% 92%;
+    --brand-300: 269 97% 85%;
+    --brand-400: 270 95% 75%;
+    --brand-500: 271 91% 65%;
+    --brand-600: 271 81% 56%;
+    --brand-700: 272 72% 47%;
+    --brand-800: 273 67% 39%;
+    --brand-900: 274 66% 32%;
+    --brand-950: 274 87% 21%;
+  }
+
+  .theme-green {
+    --brand-50:  138 76% 97%;
+    --brand-100: 141 84% 93%;
+    --brand-200: 141 79% 85%;
+    --brand-300: 142 77% 73%;
+    --brand-400: 142 69% 58%;
+    --brand-500: 142 71% 45%;
+    --brand-600: 142 76% 36%;
+    --brand-700: 142 72% 29%;
+    --brand-800: 143 64% 24%;
+    --brand-900: 144 61% 20%;
+    --brand-950: 145 80% 10%;
   }
 
   .dark {
@@ -35,7 +97,9 @@
     --card-foreground: 210 40% 98%;
     --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
-    --primary: 239 84% 67%;
+    /* --primary/--ring intentionally omitted: :root's var(--brand-500)
+       reference already applies here and must win so accent themes work
+       in dark mode too. */
     --primary-foreground: 0 0% 100%;
     --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
@@ -47,7 +111,6 @@
     --destructive-foreground: 210 40% 98%;
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
-    --ring: 239 84% 67%;
   }
 }
 

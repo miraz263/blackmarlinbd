@@ -8,6 +8,11 @@ const config: Config = {
     "./app/**/*.{ts,tsx}",
     "./src/**/*.{ts,tsx}",
   ],
+  // Accent-theme classes are built dynamically (`theme-${accentColor}` in
+  // store/themeStore.ts), so Tailwind's static content scanner never sees
+  // the literal strings and would otherwise tree-shake their @layer base
+  // rules (index.css) out of the build entirely.
+  safelist: ["theme-pink", "theme-purple", "theme-green"],
   theme: {
     container: {
       center: true,
@@ -41,18 +46,23 @@ const config: Config = {
           DEFAULT: "hsl(var(--accent))",
           foreground: "hsl(var(--accent-foreground))",
         },
+        // Recolored by the accent-color picker (see index.css `.theme-*` blocks
+        // and store/themeStore.ts) — kept as CSS vars, not literal hex, so
+        // switching accent themes restyles every brand-* class site-wide.
+        // The `<alpha-value>` placeholder preserves opacity modifiers like
+        // `brand-500/30`.
         brand: {
-          50: "#eef2ff",
-          100: "#e0e7ff",
-          200: "#c7d2fe",
-          300: "#a5b4fc",
-          400: "#818cf8",
-          500: "#6366f1",
-          600: "#4f46e5",
-          700: "#4338ca",
-          800: "#3730a3",
-          900: "#312e81",
-          950: "#1e1b4b",
+          50:  "hsl(var(--brand-50) / <alpha-value>)",
+          100: "hsl(var(--brand-100) / <alpha-value>)",
+          200: "hsl(var(--brand-200) / <alpha-value>)",
+          300: "hsl(var(--brand-300) / <alpha-value>)",
+          400: "hsl(var(--brand-400) / <alpha-value>)",
+          500: "hsl(var(--brand-500) / <alpha-value>)",
+          600: "hsl(var(--brand-600) / <alpha-value>)",
+          700: "hsl(var(--brand-700) / <alpha-value>)",
+          800: "hsl(var(--brand-800) / <alpha-value>)",
+          900: "hsl(var(--brand-900) / <alpha-value>)",
+          950: "hsl(var(--brand-950) / <alpha-value>)",
         },
         cyan: {
           400: "#22d3ee",

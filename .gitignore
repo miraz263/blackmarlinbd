@@ -52,3 +52,6 @@ nginx/certs/
 # Database backups
 *.sql
 *.dump
+
+# GeoIP database — fetched by `manage.py download_geoip`, refreshed monthly
+backend/geoip/

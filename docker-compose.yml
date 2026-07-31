@@ -48,6 +48,7 @@ services:
     volumes:
       - media_files:/app/media
       - static_files:/app/staticfiles
+      - geoip_data:/app/geoip
     depends_on:
       db:
         condition: service_healthy
@@ -58,6 +59,7 @@ services:
       - -c
       - >-
         python manage.py migrate &&
+        (python manage.py download_geoip || true) &&
         python manage.py collectstatic --noinput &&
         gunicorn config.asgi:application
         --bind 0.0.0.0:8000
@@ -135,3 +137,4 @@ volumes:
   media_files:
   static_files:
   certbot_webroot:
+  geoip_data:

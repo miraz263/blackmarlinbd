@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-export type SupportedLanguage = "en" | "bn" | "ar" | "fr" | "es";
+export type SupportedLanguage = "en" | "bn" | "ar" | "fr" | "es" | "zh";
 export type TextDirection = "ltr" | "rtl";
 
 interface LanguageState {
@@ -16,7 +16,10 @@ const DIRECTION_MAP: Record<SupportedLanguage, TextDirection> = {
   ar: "rtl",
   fr: "ltr",
   es: "ltr",
+  zh: "ltr",
 };
+
+const SUPPORTED_LANGUAGES: SupportedLanguage[] = ["en", "bn", "ar", "fr", "es", "zh"];
 
 export const useLanguageStore = create<LanguageState>()(
   persist(
@@ -57,5 +60,26 @@ if (typeof window !== "undefined") {
     } catch {
       // ignore
     }
+  } else {
+    // Brand-new visitor, no saved preference yet — ask the backend to suggest
+    // a language based on IP geolocation. Failure or "no suggestion" is fine;
+    // this only ever runs once, before any explicit choice exists.
+    import("@/services/translationsService").then(({ translationsService }) => {
+      translationsService
+        .getGeoLanguage()
+        .then((res) => {
+          const suggested = res.data?.language;
+          if (
+            suggested &&
+            !localStorage.getItem("bmbd-language") &&
+            (SUPPORTED_LANGUAGES as string[]).includes(suggested)
+          ) {
+            useLanguageStore.getState().setLanguage(suggested as SupportedLanguage);
+          }
+        })
+        .catch(() => {
+          // Offline, geo DB not present, or lookup failed — keep the default.
+        });
+    });
   }
 }

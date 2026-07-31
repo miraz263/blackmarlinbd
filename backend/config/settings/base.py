@@ -15,6 +15,11 @@ SECRET_KEY = env("SECRET_KEY")
 DEBUG = env("DEBUG")
 ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=["localhost", "127.0.0.1"])
 
+# IP -> country database used to suggest a language on a visitor's first
+# visit (see apps.translations.geo). Populated by `manage.py download_geoip`;
+# harmless if missing — the lookup just yields no suggestion.
+GEOIP_COUNTRY_DB_PATH = BASE_DIR / "geoip" / "dbip-country-lite.mmdb"
+
 AUTHENTICATION_BACKENDS = [
     "apps.users.backends.EmailBackend",
     "django.contrib.auth.backends.ModelBackend",

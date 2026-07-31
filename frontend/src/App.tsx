@@ -6,7 +6,7 @@ import { queryClient } from "@/lib/queryClient";
 import { HelmetProvider } from "react-helmet-async";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
-import { useThemeStore } from "@/store/themeStore";
+import { useThemeStore, applyAccentColor } from "@/store/themeStore";
 import { useAuthStore } from "@/store/authStore";
 import { useAnalyticsTrack } from "@/hooks/useAnalyticsTrack";
 
@@ -69,7 +69,7 @@ function PublicLayout({ children }: { children: React.ReactNode }) {
 }
 
 function AppContent() {
-  const { theme } = useThemeStore();
+  const { theme, accentColor } = useThemeStore();
   const { fetchMe } = useAuthStore();
   useAnalyticsTrack();
 
@@ -84,7 +84,8 @@ function AppContent() {
     } else {
       root.classList.add(theme);
     }
-  }, [theme]);
+    applyAccentColor(accentColor);
+  }, [theme, accentColor]);
 
   useEffect(() => {
     fetchMe();

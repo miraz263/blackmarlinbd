@@ -38,8 +38,15 @@ export const translationsKeys = {
   content:    (app: string, model: string, id: number) => ["translations", "content", app, model, id] as const,
 };
 
+export interface GeoLanguageSuggestion {
+  language: string | null;
+  country:  string | null;
+}
+
 export const translationsService = {
   getLanguages: () => apiClient.get<Language[]>("/translations/languages/"),
+  // Best-effort, first-visit-only suggestion — never overrides an explicit user choice.
+  getGeoLanguage: () => apiClient.get<GeoLanguageSuggestion>("/translations/geo-language/"),
   updateLanguage: (code: string, data: Partial<Language>) =>
     apiClient.put<Language>(`/translations/languages/${code}/`, data),
 

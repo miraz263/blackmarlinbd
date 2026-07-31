@@ -42,7 +42,7 @@ COPY . .
 # Create Non-root User
 # -------------------------
 RUN addgroup --system app && adduser --system --group app
-RUN mkdir -p /app/staticfiles /app/media && chown -R app:app /app
+RUN mkdir -p /app/staticfiles /app/media /app/geoip && chown -R app:app /app
 USER app
 
 # -------------------------

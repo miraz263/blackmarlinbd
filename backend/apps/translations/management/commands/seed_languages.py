@@ -56,6 +56,15 @@ SEED_LANGUAGES = [
         "is_default":  False,
         "order":       5,
     },
+    {
+        "code":        "zh",
+        "name":        "Chinese",
+        "native_name": "中文",
+        "direction":   "ltr",
+        "is_active":   True,
+        "is_default":  False,
+        "order":       6,
+    },
 ]
 
 # Path to the frontend i18n JSON files — resolved relative to repo root when available

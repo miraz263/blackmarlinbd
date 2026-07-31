@@ -4,9 +4,10 @@ import bn from "@/i18n/bn.json";
 import ar from "@/i18n/ar.json";
 import fr from "@/i18n/fr.json";
 import es from "@/i18n/es.json";
+import zh from "@/i18n/zh.json";
 
 type TranslationMap = Record<string, string>;
-const STRINGS: Record<string, TranslationMap> = { en, bn, ar, fr, es };
+const STRINGS: Record<string, TranslationMap> = { en, bn, ar, fr, es, zh };
 
 export function useTranslation() {
   const { language, direction } = useLanguageStore();

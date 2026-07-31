@@ -6,6 +6,7 @@ urlpatterns = [
     # Languages (public list, admin write)
     path("languages/",              views.LanguageListView.as_view()),
     path("languages/<str:code>/",   views.LanguageDetailView.as_view()),
+    path("geo-language/",           views.GeoLanguageView.as_view()),
 
     # UI strings
     path("ui/<str:lang>/",          views.UITranslationPublicView.as_view()),  # public
